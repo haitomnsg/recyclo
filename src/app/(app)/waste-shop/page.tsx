@@ -3,7 +3,7 @@
 
 import { useState, useEffect, type FormEvent, type ChangeEvent, useRef } from 'react';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ import type { WasteListing } from '@/lib/types';
 import { ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Leaf, Archive, Recycle as RecycleIcon, AlertTriangle as AlertTriangleIcon, Package, StickyNote } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 const WASTE_LISTINGS_KEY = 'ecoCycleWasteListings';
 const PREFILL_KEY = 'prefillWasteListing';
@@ -75,8 +76,10 @@ export default function WasteShopPage() {
       };
       reader.readAsDataURL(selectedFile);
     } else {
-      setPreview(null);
-      setFormData(prev => ({ ...prev, photoDataUrl: undefined }));
+      // If no file is selected (e.g., user cancels file dialog), clear preview and photoDataUrl if desired
+      // For now, we only act if a file *is* selected. To clear:
+      // setPreview(null);
+      // setFormData(prev => ({ ...prev, photoDataUrl: undefined }));
     }
   };
   
@@ -100,7 +103,7 @@ export default function WasteShopPage() {
     localStorage.setItem(WASTE_LISTINGS_KEY, JSON.stringify(updatedListings));
     setFormData(initialFormState);
     setPreview(null);
-    if(fileInputRef.current) fileInputRef.current.value = ""; // Reset file input
+    if(fileInputRef.current) fileInputRef.current.value = ""; 
     setEditingId(null);
   };
 
@@ -180,8 +183,26 @@ export default function WasteShopPage() {
               <Textarea id="description" name="description" value={formData.description} onChange={handleInputChange} placeholder="e.g., Old newspapers, lightly used plastic containers" required />
             </div>
              <div className="space-y-2">
-              <Label htmlFor="photo" className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo (optional)</Label>
-              <Input id="photo" name="photo" type="file" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:rounded-lg file:px-3 file:py-2 file:border-0" />
+              <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo (optional)</Label>
+              <Label
+                htmlFor="photo-upload"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "w-full cursor-pointer flex items-center justify-center"
+                )}
+              >
+                <ImagePlus className="mr-2 h-4 w-4" />
+                <span>{preview ? "Change Photo" : "Upload Photo"}</span>
+              </Label>
+              <Input 
+                id="photo-upload" 
+                name="photo" 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileChange} 
+                ref={fileInputRef} 
+                className="hidden" 
+              />
               {preview && (
                 <div className="mt-2 border border-border rounded-md p-2 inline-block">
                   <Image src={preview} alt="Preview" width={100} height={100} className="rounded-md object-contain max-h-24" />
@@ -272,5 +293,3 @@ export default function WasteShopPage() {
     </div>
   );
 }
-
-    

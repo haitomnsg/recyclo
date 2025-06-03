@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect, type ChangeEvent } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ import type { ClassifyWasteOutput } from '@/ai/flows/classify-waste';
 import { Loader2, Upload, Camera, Leaf, Archive, AlertTriangle, Info } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { cn } from '@/lib/utils';
 
 export default function ClassifyPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -41,11 +42,6 @@ export default function ClassifyPage() {
         console.error('Error accessing camera:', err);
         setHasCameraPermission(false);
         // Toast is optional here, as an Alert will be shown in UI
-        // toast({
-        //   variant: 'destructive',
-        //   title: 'Camera Access Denied',
-        //   description: 'Please enable camera permissions to use this feature.',
-        // });
       }
     };
 
@@ -87,9 +83,9 @@ export default function ClassifyPage() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const dataUri = canvas.toDataURL('image/jpeg');
         setPreview(dataUri);
-        setFile(null); // Clear any selected file
+        setFile(null); 
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""; // Reset file input
+          fileInputRef.current.value = ""; 
         }
         setClassificationResult(null);
         setError(null);
@@ -99,7 +95,7 @@ export default function ClassifyPage() {
   };
 
   const handleSubmit = async () => {
-    if (!preview) { // Rely only on preview
+    if (!preview) { 
       setError('Please select or capture an image first.');
       toast({ variant: "destructive", title: "No Image", description: "Please provide an image for classification." });
       return;
@@ -146,7 +142,7 @@ export default function ClassifyPage() {
         photoDataUrl: preview || undefined,
       };
       localStorage.setItem('prefillWasteListing', JSON.stringify(itemToList));
-      router.push('/waste-shop'); // Updated from /list-waste
+      router.push('/waste-shop'); 
     }
   }
 
@@ -162,7 +158,7 @@ export default function ClassifyPage() {
           <CardDescription>Use your camera or upload an image to identify if an item is organic or inorganic.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Camera Section */}
+          
           {hasCameraPermission === null && <p className="text-muted-foreground text-center">Checking camera permissions...</p>}
           
           {hasCameraPermission === true && (
@@ -185,17 +181,31 @@ export default function ClassifyPage() {
           )}
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* File Upload Section */}
           <div className="space-y-2 border border-border p-4 rounded-md shadow-sm">
-            <Label htmlFor="waste-image" className="text-md font-semibold text-foreground">Upload from File</Label>
+            <p className="text-md font-semibold text-foreground">Upload from File</p>
+            <Label
+              htmlFor="waste-image-upload"
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "w-full cursor-pointer flex items-center justify-center"
+              )}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              <span>{file ? "Change File" : "Choose File"}</span>
+            </Label>
             <Input
-              id="waste-image"
+              id="waste-image-upload"
               type="file"
               accept="image/*"
               onChange={handleFileChange}
               ref={fileInputRef}
-              className="file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:rounded-lg file:px-3 file:py-2 file:border-0"
+              className="hidden"
             />
+            {file && (
+              <p className="text-sm text-muted-foreground mt-1 text-center">
+                Selected: {file.name}
+              </p>
+            )}
           </div>
           
           {preview && (
@@ -253,5 +263,3 @@ export default function ClassifyPage() {
     </div>
   );
 }
-
-    
