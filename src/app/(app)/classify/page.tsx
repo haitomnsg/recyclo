@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useRef, type ChangeEvent } from 'react';
+import { useState, useRef, useEffect, type ChangeEvent } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -19,9 +20,44 @@ export default function ClassifyPage() {
   const [classificationResult, setClassificationResult] = useState<ClassifyWasteOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        setHasCameraPermission(false);
+        // Toast is optional here, as an Alert will be shown in UI
+        // toast({
+        //   variant: 'destructive',
+        //   title: 'Camera Access Denied',
+        //   description: 'Please enable camera permissions to use this feature.',
+        // });
+      }
+    };
+
+    getCameraPermission();
+
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -37,9 +73,35 @@ export default function ClassifyPage() {
     }
   };
 
+  const handleCapturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      const aspectRatio = video.videoWidth / video.videoHeight;
+      canvas.width = 640; 
+      canvas.height = canvas.width / aspectRatio;
+      
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUri = canvas.toDataURL('image/jpeg');
+        setPreview(dataUri);
+        setFile(null); // Clear any selected file
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""; // Reset file input
+        }
+        setClassificationResult(null);
+        setError(null);
+        toast({ title: "Photo Captured", description: "Image ready for classification."});
+      }
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!file || !preview) {
-      setError('Please select an image file first.');
+    if (!preview) { // Rely only on preview
+      setError('Please select or capture an image first.');
+      toast({ variant: "destructive", title: "No Image", description: "Please provide an image for classification." });
       return;
     }
 
@@ -71,7 +133,6 @@ export default function ClassifyPage() {
         name: `Classified ${classificationResult.wasteType} item`,
         category: classificationResult.wasteType === 'organic' ? 'Organic' : 'Inorganic',
       };
-      // Pass data via query params or store in session/localStorage for pre-filling
       localStorage.setItem('prefillWasteLog', JSON.stringify(itemToLog));
       router.push('/log');
     }
@@ -96,13 +157,37 @@ export default function ClassifyPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Camera className="w-6 h-6 text-primary" />
-            Upload or Capture an Image
+            Provide an Image
           </CardTitle>
-          <CardDescription>Let AI help you identify if an item is organic or inorganic.</CardDescription>
+          <CardDescription>Use your camera or upload an image to identify if an item is organic or inorganic.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="waste-image">Waste Image</Label>
+        <CardContent className="space-y-6">
+          {/* Camera Section */}
+          {hasCameraPermission === null && <p className="text-muted-foreground text-center">Checking camera permissions...</p>}
+          
+          {hasCameraPermission === true && (
+            <div className="space-y-2 border border-border p-4 rounded-md shadow-sm">
+              <Label className="text-md font-semibold text-foreground">Use Camera</Label>
+              <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted border" autoPlay playsInline muted />
+              <Button onClick={handleCapturePhoto} className="w-full">
+                <Camera className="mr-2 h-4 w-4" /> Capture Photo
+              </Button>
+            </div>
+          )}
+          {hasCameraPermission === false && (
+             <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Camera Access Required</AlertTitle>
+              <AlertDescription>
+                Camera permission was denied or is unavailable. Please enable camera access in your browser settings and refresh the page.
+              </AlertDescription>
+            </Alert>
+          )}
+          <canvas ref={canvasRef} className="hidden" />
+
+          {/* File Upload Section */}
+          <div className="space-y-2 border border-border p-4 rounded-md shadow-sm">
+            <Label htmlFor="waste-image" className="text-md font-semibold text-foreground">Upload from File</Label>
             <Input
               id="waste-image"
               type="file"
@@ -112,12 +197,15 @@ export default function ClassifyPage() {
               className="file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:rounded-lg file:px-3 file:py-2 file:border-0"
             />
           </div>
+          
           {preview && (
             <div className="mt-4 border border-border rounded-md p-2">
+              <Label className="block text-sm font-medium text-muted-foreground mb-1">Image Preview:</Label>
               <Image src={preview} alt="Preview" width={200} height={200} className="rounded-md object-contain mx-auto max-h-60" />
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={isLoading || !file} className="w-full">
+
+          <Button onClick={handleSubmit} disabled={isLoading || !preview} className="w-full">
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
