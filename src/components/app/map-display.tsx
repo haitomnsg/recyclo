@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react'; // Import React for React.memo
+import React from 'react'; // Import React for React.memo and useMemo
 import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -30,17 +30,17 @@ interface MapDisplayProps {
 }
 
 const MapDisplayComponent: React.FC<MapDisplayProps> = ({ center, zoom }) => {
-  // Ensure component only renders on the client where 'window' is available
-  if (typeof window === 'undefined') {
-    return null;
-  }
+  const mapStyle = React.useMemo(() => ({
+    height: '450px',
+    width: '100%'
+  }), []);
 
   return (
     <MapContainer
       center={center}
       zoom={zoom}
       scrollWheelZoom={true}
-      style={{ height: '450px', width: '100%' }} // Explicit height is crucial for Leaflet
+      style={mapStyle} // Use memoized style
       className="rounded-md z-0" // z-0 can help with potential stacking issues
     >
       <TileLayer
