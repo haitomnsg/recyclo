@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, type FormEvent, type ChangeEvent, useRef } from 'react';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { WasteListing } from '@/lib/types';
-import { ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Leaf, Archive, Recycle as RecycleIcon, AlertTriangle as AlertTriangleIcon, Package } from 'lucide-react';
+import { ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Leaf, Archive, Recycle as RecycleIcon, AlertTriangle as AlertTriangleIcon, Package, StickyNote } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -270,3 +271,5 @@ export default function ListWastePage() {
     </div>
   );
 }
+
+    
