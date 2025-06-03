@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -33,13 +34,13 @@ export default function DashboardPage() {
   const quickActions = [
     { href: '/classify', label: 'Classify Waste', Icon: Camera, description: 'Identify waste type with AI' },
     { href: '/log', label: 'Log Waste', Icon: ListPlus, description: 'Record your daily waste' },
-    { href: '/list-waste', label: 'Sell/Donate Waste', Icon: ShoppingBag, description: 'List items for others' },
+    { href: '/waste-shop', label: 'Sell/Donate Waste', Icon: ShoppingBag, description: 'List items for others' }, // Updated href
   ];
 
   const stats = [
     { label: 'Total Items Logged', value: totalWasteLogged, Icon: Trash2, color: 'text-primary' },
     { label: 'Organic Items (Compostable)', value: totalComposted, Icon: Sprout, color: 'text-green-600' },
-    { label: 'Items Listed for Sale/Donation', value: totalSold, Icon: Recycle, color: 'text-blue-600' },
+    { label: 'Items Listed in WasteShop', value: totalSold, Icon: Recycle, color: 'text-blue-600' }, // Updated label
   ];
 
   return (
@@ -92,3 +93,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

@@ -146,7 +146,7 @@ export default function ClassifyPage() {
         photoDataUrl: preview || undefined,
       };
       localStorage.setItem('prefillWasteListing', JSON.stringify(itemToList));
-      router.push('/list-waste');
+      router.push('/waste-shop'); // Updated from /list-waste
     }
   }
 
@@ -246,10 +246,12 @@ export default function ClassifyPage() {
           </CardContent>
           <CardFooter className="flex flex-col sm:flex-row gap-2 pt-4">
             <Button onClick={handleLogItem} variant="outline" className="w-full sm:w-auto">Log this Item</Button>
-            <Button onClick={handleListItem} className="w-full sm:w-auto">List for Sale/Donation</Button>
+            <Button onClick={handleListItem} className="w-full sm:w-auto">List in WasteShop</Button>
           </CardFooter>
         </Card>
       )}
     </div>
   );
 }
+
+    
