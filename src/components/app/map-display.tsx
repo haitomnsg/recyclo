@@ -41,7 +41,7 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({ center, zoom }) => {
       zoom={zoom}
       scrollWheelZoom={true}
       style={mapStyle} // Use memoized style
-      className="rounded-md z-0" // z-0 can help with potential stacking issues
+      className="rounded-md" // Removed z-0
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
