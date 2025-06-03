@@ -2,25 +2,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Image from 'next/image'; // Keep for reported zone photos
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DirtyZoneReport } from '@/lib/types';
-import { MapPin, PlusCircle, AlertTriangle, ExternalLink } from 'lucide-react';
+import { MapPin, PlusCircle, AlertTriangle, ExternalLink, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const DIRTY_ZONES_KEY = 'ecoCycleDirtyZones';
 
+// Dynamically import the MapDisplay component to ensure it's client-side only
+const MapDisplay = dynamic(() => import('@/components/app/map-display'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-muted/50 rounded-md aspect-[16/9] flex flex-col items-center justify-center min-h-[450px]">
+      <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+      <p className="text-muted-foreground">Loading map...</p>
+    </div>
+  ),
+});
+
 export default function MapPage() {
   const [reportedZones, setReportedZones] = useState<DirtyZoneReport[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true); // Ensure client-side localStorage access
     const storedReports = localStorage.getItem(DIRTY_ZONES_KEY);
     if (storedReports) {
       setReportedZones(JSON.parse(storedReports));
     }
   }, []);
+
+  const kathmanduCenter: [number, number] = [27.7172, 85.3240]; // Latitude, Longitude for Kathmandu
 
   return (
     <div className="space-y-6">
@@ -39,21 +55,19 @@ export default function MapPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="w-6 h-6 text-primary" />
-            Kathmandu Area Map (Conceptual)
+            Kathmandu Area Map
           </CardTitle>
-          <CardDescription>This is a placeholder for a map. Reported zones are listed below.</CardDescription>
+          <CardDescription>Interactive map showing the Kathmandu area. Reported zones are listed below.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-muted/50 rounded-md overflow-hidden aspect-[16/9] flex items-center justify-center">
-            <Image 
-              src="https://placehold.co/800x450.png" 
-              alt="Placeholder map of Kathmandu" 
-              width={800} 
-              height={450} 
-              className="object-cover w-full h-full"
-              data-ai-hint="map kathmandu city" 
-            />
-          </div>
+          {isClient ? (
+            <MapDisplay center={kathmanduCenter} zoom={13} />
+          ) : (
+            <div className="bg-muted/50 rounded-md aspect-[16/9] flex flex-col items-center justify-center min-h-[450px]">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+              <p className="text-muted-foreground">Loading map...</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
