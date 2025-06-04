@@ -22,21 +22,23 @@ import {
   Star,
   ShieldCheck,
   Rocket,
-  BarChart3,
   Leaf,
   Recycle as RecycleIcon,
   Diamond,
   ShoppingCart,
   Eye,
+  Mail,
+  Phone,
+  HandCoins,
 } from 'lucide-react';
-import type { WasteItem, WasteListing, DirtySpot, WasteCategory, ThriftItem, ThriftItemCategory } from '@/lib/types';
+import type { WasteItem, WasteListing, DirtySpot, WasteCategory, ThriftItem, ThriftItemCategory, WasteListingCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { sampleThriftItems, thriftCategoryIcons, allThriftCategoryValue } from '@/data/thrift-items';
 
 
 const WASTE_LOG_KEY = 'ecoCycleWasteLog';
 const DIRTY_SPOTS_KEY = 'ecoCycleDirtySpots';
-const WASTE_LISTINGS_KEY = 'ecoCycleWasteListings'; // Although removed from display, keep for score calculation logic
+const WASTE_LISTINGS_KEY = 'ecoCycleWasteListings';
 
 interface EcoLevel {
   name: string;
@@ -70,13 +72,14 @@ interface MetricDetail {
   progressMax: number;
 }
 
-const categoryIconsSmall: Record<WasteListing['category'], React.ElementType> = {
-  Organic: Leaf,
-  Inorganic: Archive,
+const userListingCategoryIcons: Record<WasteListingCategory, React.ElementType> = {
+  Organic: HandCoins,
+  Inorganic: Package,
   Recyclable: RecycleIcon,
   Hazardous: AlertTriangle,
   Other: Package,
 };
+
 
 export default function DashboardPage() {
   const [ecoScore, setEcoScore] = useState(0);
@@ -84,6 +87,7 @@ export default function DashboardPage() {
   const [progressToNextLevel, setProgressToNextLevel] = useState(0);
   const [keyMetrics, setKeyMetrics] = useState<MetricDetail[]>([]);
   const [featuredThriftItems, setFeaturedThriftItems] = useState<ThriftItem[]>([]);
+  const [featuredUserListings, setFeaturedUserListings] = useState<WasteListing[]>([]);
 
 
   useEffect(() => {
@@ -92,19 +96,22 @@ export default function DashboardPage() {
 
     const dirtySpotsString = localStorage.getItem(DIRTY_SPOTS_KEY);
     const dirtySpots: DirtySpot[] = dirtySpotsString ? JSON.parse(dirtySpotsString) : [];
-
-    const listedWasteString = localStorage.getItem(WASTE_LISTINGS_KEY);
+    
+    const listedWasteString = localStorage.getItem(WASTE_LISTINGS_KEY); // For Eco Score
     const listedWaste: WasteListing[] = listedWasteString ? JSON.parse(listedWasteString) : [];
 
-    setFeaturedThriftItems(sampleThriftItems.slice(0, 3));
+    const userListingsString = localStorage.getItem(WASTE_LISTINGS_KEY); // For displaying user listings
+    const userListings: WasteListing[] = userListingsString ? JSON.parse(userListingsString) : [];
+    setFeaturedUserListings(userListings.slice(0, 2)); // Show first 2 user listings
 
+    setFeaturedThriftItems(sampleThriftItems.slice(0, 3));
 
     const organicWasteCount = loggedWaste.filter(item => item.category === 'Organic').length;
     const inorganicWasteCount = loggedWaste.filter(item => item.category === 'Inorganic').length;
 
     const reportedCount = dirtySpots.filter(spot => spot.status === 'Dirty' || spot.status === 'Cleaned').length;
     const cleanedCount = dirtySpots.filter(spot => spot.status === 'Cleaned').length;
-    const wasteShopItemsCount = listedWaste.length;
+    const wasteShopItemsCount = listedWaste.length; // Count all user listed items for score
 
     setKeyMetrics([
       { label: 'Organic Waste Logged', value: organicWasteCount, Icon: Sprout, colorClass: '[&>div]:bg-green-500', progressMax: 50 },
@@ -295,6 +302,71 @@ export default function DashboardPage() {
         )}
       </section>
 
+      <section>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold font-headline text-foreground">Your Recent WasteShop Items</h2>
+          {featuredUserListings.length > 0 && (
+            <Button variant="link" asChild>
+              <Link href="/waste-shop">View All Your Listings</Link>
+            </Button>
+          )}
+        </div>
+        {featuredUserListings.length === 0 ? (
+          <Card className="shadow-sm">
+            <CardContent className="p-6 text-center">
+              <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground mb-4">You haven't listed any items for exchange yet.</p>
+              <Button asChild>
+                <Link href="/waste-shop">List an Item Now</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {featuredUserListings.map(item => {
+              const IconComp = userListingCategoryIcons[item.category as WasteListingCategory] || Package;
+              return (
+                <Card key={item.id} className="shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
+                  {item.photoDataUrl && (
+                    <div className="relative w-full h-32 bg-muted">
+                      <Image
+                        src={item.photoDataUrl}
+                        alt={item.description.substring(0,30)}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-t-lg"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className="p-3 pb-1">
+                    <div className="flex justify-between items-start gap-2">
+                      <CardTitle className="text-sm font-semibold line-clamp-1 leading-tight mt-0.5 flex items-center">
+                         <IconComp className="w-4 h-4 mr-2 flex-shrink-0" /> {item.category}
+                      </CardTitle>
+                      <Badge variant="outline" className="text-xs">{new Date(item.dateListed).toLocaleDateString()}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-1 flex-grow">
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">{item.description}</p>
+                     <p className="text-xs font-medium text-primary flex items-center gap-1">
+                        {item.contactMethod.includes('@') ? <Mail className="w-3 h-3" /> : (item.contactMethod.match(/\d/) ? <Phone className="w-3 h-3" /> : <MapPin className="w-3 h-3" />)}
+                        {item.contactMethod}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="p-3 border-t">
+                     <Button variant="outline" size="sm" className="w-full" asChild>
+                       <Link href={`/waste-shop#listing-${item.id}`}>
+                         <Eye className="mr-2 h-4 w-4" /> View Listing
+                       </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       <div className="text-center mt-8">
         <Button variant="link" asChild>
           <Link href="/onboarding" className="text-primary hover:underline">
@@ -305,3 +377,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
