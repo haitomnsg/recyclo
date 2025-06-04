@@ -1,3 +1,4 @@
+
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -7,9 +8,10 @@ interface PageContainerProps {
 }
 
 export function PageContainer({ children, className }: PageContainerProps) {
+  // Changed from main to div to avoid nested main tags when used with SidebarInset
   return (
-    <main className={cn("flex-grow container mx-auto px-4 py-8 max-w-3xl", className)}>
+    <div className={cn("container mx-auto px-4 py-8 max-w-3xl", className)}>
       {children}
-    </main>
+    </div>
   );
 }
