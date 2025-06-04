@@ -1,24 +1,36 @@
 
 'use client';
 
-import React from 'react';
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import React from 'react'; // Import React for React.memo and useMemo
+import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { Loader2 } from 'lucide-react';
+import type { DirtySpot } from '@/data/dirty-spots'; // Ensure this type is correctly defined and imported
 
 interface MapDisplayProps {
-  apiKey: string;
+  apiKey: string; // Kept for consistency, though useJsApiLoader uses it directly
   center: google.maps.LatLngLiteral;
   zoom: number;
-  // markers?: { position: google.maps.LatLngLiteral; popupText?: string }[]; // For future use
+  dirtySpots?: DirtySpot[];
+  selectedSpot?: DirtySpot | null;
+  onMarkerClick?: (spot: DirtySpot) => void;
+  onInfoWindowClose?: () => void;
 }
 
-const containerStyle: React.CSSProperties = {
+const containerStyleDefault: React.CSSProperties = {
   width: '100%',
-  height: '100%', // Ensure this fills the parent container
-  minHeight: '300px', // Minimum height to ensure map is visible
+  height: '100%',
+  minHeight: '300px', // Ensure map is visible even if parent height is small
 };
 
-const MapDisplayComponent: React.FC<MapDisplayProps> = ({ apiKey, center, zoom }) => {
+const MapDisplayComponent: React.FC<MapDisplayProps> = ({
+  apiKey,
+  center,
+  zoom,
+  dirtySpots = [],
+  selectedSpot,
+  onMarkerClick,
+  onInfoWindowClose,
+}) => {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script', // Unique ID for the script tag
     googleMapsApiKey: apiKey,
@@ -28,15 +40,15 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({ apiKey, center, zoom }
   const mapRef = React.useRef<google.maps.Map | null>(null);
 
   const onLoad = React.useCallback((map: google.maps.Map) => {
-    // You can optionally do something when the map loads, like setting bounds
-    // const bounds = new window.google.maps.LatLngBounds(center);
-    // map.fitBounds(bounds); // Example: fit map to bounds
     mapRef.current = map;
   }, []);
 
   const onUnmount = React.useCallback(() => {
     mapRef.current = null;
   }, []);
+
+  // Memoize containerStyle to prevent unnecessary re-renders of GoogleMap due to style prop changing identity
+  const containerStyle = React.useMemo(() => containerStyleDefault, []);
 
   if (loadError) {
     return (
@@ -57,15 +69,37 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({ apiKey, center, zoom }
       onLoad={onLoad}
       onUnmount={onUnmount}
       options={{
-        streetViewControl: false, // Disable street view
-        mapTypeControl: false,    // Disable map type (Satellite/Terrain) control
-        fullscreenControl: false, // Disable fullscreen button
-        zoomControl: true,        // Keep zoom control
-        // You can add more options here as needed
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        zoomControl: true,
       }}
     >
-      {/* Markers can be added here in the future */}
-      {/* Example: <MarkerF position={center} /> */}
+      {dirtySpots.map((spot) => (
+        <React.Fragment key={spot.id}>
+          <MarkerF
+            position={spot.position}
+            onClick={() => onMarkerClick?.(spot)}
+            // Example of how you might use a custom icon (ensure the path is correct in /public)
+            // icon={{
+            //   url: `/icons/custom-map-pin.svg`, 
+            //   scaledSize: new window.google.maps.Size(30, 30),
+            // }}
+          />
+          {selectedSpot && selectedSpot.id === spot.id && onInfoWindowClose && (
+            <InfoWindowF
+              position={spot.position}
+              onCloseClick={onInfoWindowClose}
+              options={{ pixelOffset: new window.google.maps.Size(0, -30) }} // Adjusts InfoWindow position relative to marker
+            >
+              <div className="p-1">
+                <h4 className="font-semibold text-sm text-gray-800">{spot.name}</h4>
+                {spot.address && <p className="text-xs text-gray-600">{spot.address}</p>}
+              </div>
+            </InfoWindowF>
+          )}
+        </React.Fragment>
+      ))}
     </GoogleMap>
   ) : (
     <div className="flex flex-col items-center justify-center h-full">
@@ -75,8 +109,8 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({ apiKey, center, zoom }
   );
 };
 
-// Memoize the component to prevent unnecessary re-renders
+// Memoize the component to prevent unnecessary re-renders if props haven't changed
 const MemoizedMapDisplay = React.memo(MapDisplayComponent);
-MemoizedMapDisplay.displayName = 'MapDisplay';
+MemoizedMapDisplay.displayName = 'MapDisplay'; // For better debugging
 
 export default MemoizedMapDisplay;

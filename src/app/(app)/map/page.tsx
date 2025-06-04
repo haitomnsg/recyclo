@@ -1,29 +1,44 @@
 
 'use client';
 
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Loader2 } from 'lucide-react';
-import React from 'react';
+import { Loader2, PlusCircle, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { sampleDirtySpots, type DirtySpot } from '@/data/dirty-spots'; // Ensure correct import
 
-// Dynamically import MapDisplay since it uses client-side Google Maps API
+// Dynamically import MapDisplay as it uses client-side Google Maps API
 const MapDisplay = dynamic(() => import('@/components/app/map-display'), {
   ssr: false, // Ensure it's only rendered on the client
   loading: () => (
-    <div className="flex flex-col items-center justify-center flex-grow h-full">
+    <div className="flex flex-col items-center justify-center h-full">
       <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
       <p className="text-muted-foreground">Initializing Map...</p>
     </div>
   ),
 });
 
-// Define Kathmandu's coordinates as google.maps.LatLngLiteral
 const KATHMANDU_CENTER: google.maps.LatLngLiteral = { lat: 27.7172, lng: 85.3240 };
-const DEFAULT_ZOOM = 13;
+const DEFAULT_ZOOM = 12; // Zoom level for Kathmandu Valley
 
 export default function MapPage() {
-  // Access the API key from environment variables
-  // IMPORTANT: This requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to be set in your .env or .env.local
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const [selectedSpot, setSelectedSpot] = useState<DirtySpot | null>(null);
+
+  const handleMarkerClick = (spot: DirtySpot) => {
+    setSelectedSpot(spot);
+  };
+
+  const handleInfoWindowClose = () => {
+    setSelectedSpot(null);
+  };
+
+  const handleListItemClick = (spot: DirtySpot) => {
+    setSelectedSpot(spot);
+    // In a more advanced setup, you might want to pan the map to the spot here
+    // mapRef.current?.panTo(spot.position);
+  };
 
   if (!apiKey) {
     return (
@@ -41,11 +56,57 @@ export default function MapPage() {
   }
 
   return (
-    // Ensure this container allows the map to fill the space
-    // The PageContainer for AppLayout already provides padding, so we aim for full height within that.
-    // The h-full on this div, combined with h-full on MapDisplay's containerStyle, is key.
-    <div className="flex flex-col h-full w-full">
-      <MapDisplay apiKey={apiKey} center={KATHMANDU_CENTER} zoom={DEFAULT_ZOOM} />
+    <div className="flex flex-col space-y-4 h-full"> {/* Use h-full if PageContainer allows expansion */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h2 className="text-2xl md:text-3xl font-bold font-headline text-primary">
+          Community Reported Dirty Spots
+        </h2>
+        <Button variant="default" className="w-full sm:w-auto">
+          <PlusCircle className="mr-2 h-5 w-5" />
+          Report New Dirty Spot
+        </Button>
+      </div>
+
+      {/* Map Container - Increased Height */}
+      <div className="h-[50vh] min-h-[300px] w-full rounded-lg overflow-hidden shadow-lg border border-border">
+        <MapDisplay
+          apiKey={apiKey}
+          center={KATHMANDU_CENTER}
+          zoom={DEFAULT_ZOOM}
+          dirtySpots={sampleDirtySpots}
+          selectedSpot={selectedSpot}
+          onMarkerClick={handleMarkerClick}
+          onInfoWindowClose={handleInfoWindowClose}
+        />
+      </div>
+
+      {/* List of Dirty Spots - Scrollable */}
+      <div className="flex-grow overflow-y-auto space-y-3 pr-1 pb-4"> {/* Added pb-4 for some breathing room at the bottom */}
+        <h3 className="text-xl font-semibold font-headline text-foreground sticky top-0 bg-background/80 backdrop-blur-sm py-2 z-10">
+          Reported Locations:
+        </h3>
+        {sampleDirtySpots.length === 0 ? (
+          <p className="text-muted-foreground">No dirty spots reported yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {sampleDirtySpots.map((spot) => (
+              <Card 
+                key={spot.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer bg-card"
+                onClick={() => handleListItemClick(spot)}
+              >
+                <CardHeader className="p-3">
+                  <CardTitle className="text-base flex items-center text-card-foreground">
+                    <MapPin className="w-4 h-4 mr-2 text-destructive flex-shrink-0" />
+                    {spot.name}
+                  </CardTitle>
+                  {spot.address && <CardDescription className="text-xs mt-1">{spot.address}</CardDescription>}
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
