@@ -2,66 +2,80 @@
 'use client';
 
 import React from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { LatLngExpression } from 'leaflet';
-
-// Fix for default icon path issue with Webpack/Next.js
-// This ensures Leaflet's default marker icons load correctly if you add markers later.
-if (typeof window !== 'undefined') {
-  // Check if already configured to avoid re-applying on HMR or multiple loads
-  if (!(L.Icon.Default.prototype as any)._iconUrlOverridden) {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: '/leaflet/marker-icon-2x.png', // Path relative to public directory
-      iconUrl: '/leaflet/marker-icon.png',         // Path relative to public directory
-      shadowUrl: '/leaflet/marker-shadow.png',     // Path relative to public directory
-    });
-    // Mark as configured
-    (L.Icon.Default.prototype as any)._iconUrlOverridden = true;
-  }
-}
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import { Loader2 } from 'lucide-react';
 
 interface MapDisplayProps {
-  center: LatLngExpression;
+  apiKey: string;
+  center: google.maps.LatLngLiteral;
   zoom: number;
-  // markers?: { position: LatLngExpression; popupText: string }[]; // For future use
+  // markers?: { position: google.maps.LatLngLiteral; popupText?: string }[]; // For future use
 }
 
-const MapDisplayComponent: React.FC<MapDisplayProps> = ({ center, zoom }) => {
-  const mapStyle = React.useMemo(() => ({
-    height: '100%', // Fill parent
-    width: '100%'   // Fill parent
-  }), []);
+const containerStyle: React.CSSProperties = {
+  width: '100%',
+  height: '100%', // Ensure this fills the parent container
+  minHeight: '300px', // Minimum height to ensure map is visible
+};
 
-  return (
-    <MapContainer
+const MapDisplayComponent: React.FC<MapDisplayProps> = ({ apiKey, center, zoom }) => {
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script', // Unique ID for the script tag
+    googleMapsApiKey: apiKey,
+    // libraries: ['places'], // Uncomment if you need Places API features
+  });
+
+  const mapRef = React.useRef<google.maps.Map | null>(null);
+
+  const onLoad = React.useCallback((map: google.maps.Map) => {
+    // You can optionally do something when the map loads, like setting bounds
+    // const bounds = new window.google.maps.LatLngBounds(center);
+    // map.fitBounds(bounds); // Example: fit map to bounds
+    mapRef.current = map;
+  }, []);
+
+  const onUnmount = React.useCallback(() => {
+    mapRef.current = null;
+  }, []);
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-destructive p-4 text-center">
+        <Loader2 className="h-8 w-8 text-destructive mb-2" />
+        <p className="font-semibold">Error loading map</p>
+        <p className="text-xs mt-1">{loadError.message}</p>
+        <p className="text-xs mt-2">Please ensure your API key is correct, billing is enabled for your Google Cloud project, and the Maps JavaScript API is enabled.</p>
+      </div>
+    );
+  }
+
+  return isLoaded ? (
+    <GoogleMap
+      mapContainerStyle={containerStyle}
       center={center}
       zoom={zoom}
-      scrollWheelZoom={true}
-      style={mapStyle}
-      className="rounded-md"
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+      options={{
+        streetViewControl: false, // Disable street view
+        mapTypeControl: false,    // Disable map type (Satellite/Terrain) control
+        fullscreenControl: false, // Disable fullscreen button
+        zoomControl: true,        // Keep zoom control
+        // You can add more options here as needed
+      }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {/*
-        Future placeholder for markers:
-        {markers && markers.map((marker, idx) => (
-          <Marker key={idx} position={marker.position}>
-            <Popup>{marker.popupText}</Popup>
-          </Marker>
-        ))}
-      */}
-    </MapContainer>
+      {/* Markers can be added here in the future */}
+      {/* Example: <MarkerF position={center} /> */}
+    </GoogleMap>
+  ) : (
+    <div className="flex flex-col items-center justify-center h-full">
+      <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+      <p className="text-muted-foreground">Loading map...</p>
+    </div>
   );
 };
 
-// Wrap MapDisplayComponent with React.memo
-// This prevents re-rendering if props (center, zoom) haven't changed,
-// which can help avoid the "Map container is already initialized" error.
+// Memoize the component to prevent unnecessary re-renders
 const MemoizedMapDisplay = React.memo(MapDisplayComponent);
 MemoizedMapDisplay.displayName = 'MapDisplay';
 
