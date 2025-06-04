@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { WasteListing, WasteListingCategory, ThriftItem, ThriftItemCategory } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sampleThriftItems, thriftCategories, allThriftCategoryValue } from '@/data/thrift-items';
+import { Badge } from "@/components/ui/badge"; // Added import
 import { 
   ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Search, FilterX,
   Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins, Recycle, AlertTriangle, StickyNote
@@ -34,8 +35,8 @@ const initialFormState: Omit<WasteListing, 'id' | 'dateListed'> = {
 const wasteCategoryIcons: Record<WasteListingCategory, React.ElementType> = {
   Organic: HandCoins,
   Inorganic: Package,
-  Recyclable: Recycle, // Corrected: Use imported Recycle
-  Hazardous: AlertTriangle, // Corrected: Use imported AlertTriangle
+  Recyclable: Recycle,
+  Hazardous: AlertTriangle,
   Other: Package,
 };
 
