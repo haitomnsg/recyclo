@@ -127,7 +127,7 @@ export default function ClassifyPage() {
     if (classificationResult) {
       const itemToLog = {
         name: `Classified ${classificationResult.wasteType} item`,
-        category: classificationResult.wasteType === 'organic' ? 'Organic' : 'Inorganic',
+        category: classificationResult.wasteType === 'organic' ? 'Organic Fertilizer' : 'Other',
       };
       localStorage.setItem('prefillWasteLog', JSON.stringify(itemToLog));
       router.push('/log');
@@ -137,7 +137,7 @@ export default function ClassifyPage() {
   const handleListItem = () => {
      if (classificationResult) {
       const itemToList = {
-        category: classificationResult.wasteType === 'organic' ? 'Organic' : 'Inorganic',
+        category: classificationResult.wasteType === 'organic' ? 'Organic' : 'Inorganic', // Keep this as original for WasteListing
         description: `Classified ${classificationResult.wasteType} item. ${classificationResult.explanation}`,
         photoDataUrl: preview || undefined,
       };

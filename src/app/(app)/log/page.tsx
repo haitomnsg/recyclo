@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { WasteItem, RecyclingCategoryType } from '@/lib/types';
-import { ListPlus, Trash2, Edit3, Leaf, Archive, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone } from 'lucide-react';
+import type { WasteItem, RecyclingCategoryType, WasteCategory } from '@/lib/types';
+import { 
+  ListPlus, Trash2, Edit3, Leaf, Archive, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone,
+  Shirt, Laptop, BookOpen, Sofa, ToyBrick, Brush, Sprout, Package as PackageIcon // Aliased Package to avoid conflict
+} from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { recyclingCategories, getPartnersByCategory, type RecyclingPartner } from '@/data/recycling-partners';
@@ -20,10 +22,21 @@ const PREFILL_KEY = 'prefillWasteLog';
 
 type LogMode = 'public' | 'business';
 
-const initialFormState: Omit<WasteItem, 'id' | 'date' | 'sourceType'> & { date: string } = {
+const detailedWasteCategories: { name: WasteCategory; Icon: React.ElementType }[] = [
+  { name: 'Clothes', Icon: Shirt },
+  { name: 'Electronics', Icon: Laptop },
+  { name: 'Books', Icon: BookOpen },
+  { name: 'Furniture', Icon: Sofa },
+  { name: 'Toys', Icon: ToyBrick },
+  { name: 'Art and Craft', Icon: Brush },
+  { name: 'Organic Fertilizer', Icon: Sprout },
+  { name: 'Other', Icon: PackageIcon },
+];
+
+const initialFormState: Omit<WasteItem, 'id' | 'sourceType'> & { date: string } = {
   name: '',
-  category: 'Organic',
-  date: new Date().toISOString().split('T')[0], // Default to today
+  category: 'Other', // Default to 'Other'
+  date: new Date().toISOString().split('T')[0], 
   weight: undefined,
   notes: '',
   businessName: '',
@@ -51,9 +64,9 @@ export default function LogPage() {
       setFormData(prev => ({
         ...prev,
         name: prefillData.name || '',
-        category: prefillData.category || 'Organic',
+        category: prefillData.category || 'Other', // Use new default
       }));
-      localStorage.removeItem(PREFILL_KEY); // Clear after use
+      localStorage.removeItem(PREFILL_KEY); 
     }
   }, []);
 
@@ -70,8 +83,8 @@ export default function LogPage() {
     setFormData(prev => ({ ...prev, [name]: name === 'weight' ? (value ? parseFloat(value) : undefined) : value }));
   };
 
-  const handleCategoryChange = (value: 'Organic' | 'Inorganic') => {
-    setFormData(prev => ({ ...prev, category: value }));
+  const handleCategoryButtonClick = (category: WasteCategory) => {
+    setFormData(prev => ({ ...prev, category: category }));
   };
   
   const handleSubmit = (e: FormEvent) => {
@@ -102,7 +115,7 @@ export default function LogPage() {
     }
     setWasteLog(updatedLog);
     localStorage.setItem(WASTE_LOG_KEY, JSON.stringify(updatedLog));
-    setFormData(initialFormState); // Reset with businessName cleared too
+    setFormData(initialFormState); 
     setEditingId(null);
   };
 
@@ -112,7 +125,7 @@ export default function LogPage() {
     setFormData({
         name: item.name,
         category: item.category,
-        date: item.date.split('T')[0], // Format for date input
+        date: item.date.split('T')[0], 
         weight: item.weight,
         notes: item.notes,
         businessName: item.businessName || '',
@@ -125,7 +138,7 @@ export default function LogPage() {
     setWasteLog(updatedLog);
     localStorage.setItem(WASTE_LOG_KEY, JSON.stringify(updatedLog));
     toast({ title: "Item Deleted", description: "The item has been removed from your log." });
-    if (editingId === id) { // If deleting the item being edited
+    if (editingId === id) { 
       setFormData(initialFormState);
       setEditingId(null);
     }
@@ -138,14 +151,20 @@ export default function LogPage() {
 
   const handleModeChange = (newMode: LogMode) => {
     setLogMode(newMode);
-    setFormData(initialFormState); // Reset form when switching modes
+    setFormData(initialFormState); 
     setEditingId(null);
-    setSelectedRecyclingCategory(null); // Reset category selection
+    setSelectedRecyclingCategory(null); 
   };
   
   const handleRecyclingCategoryClick = (categoryType: RecyclingCategoryType) => {
     setSelectedRecyclingCategory(prev => prev === categoryType ? null : categoryType);
   };
+
+  const getCategoryIcon = (categoryName: WasteCategory): React.ElementType => {
+    const found = detailedWasteCategories.find(cat => cat.name === categoryName);
+    return found ? found.Icon : PackageIcon;
+  };
+
 
   return (
     <div className="space-y-8">
@@ -236,32 +255,37 @@ export default function LogPage() {
               <Label htmlFor="name" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Item Name*</Label>
               <Input id="name" name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g., Banana Peels, Plastic Bottle" required />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category" className="flex items-center gap-1"><Archive className="w-4 h-4 text-muted-foreground" />Category*</Label>
-                <Select name="category" value={formData.category} onValueChange={handleCategoryChange}>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Organic">
-                      <span className="flex items-center"><Leaf className="w-4 h-4 mr-2 text-green-600" />Organic</span>
-                    </SelectItem>
-                    <SelectItem value="Inorganic">
-                      <span className="flex items-center"><Archive className="w-4 h-4 mr-2 text-blue-600" />Inorganic</span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+            
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1"><Archive className="w-4 h-4 text-muted-foreground" />Category*</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {detailedWasteCategories.map(cat => (
+                  <Button
+                    key={cat.name}
+                    type="button"
+                    variant={formData.category === cat.name ? 'default' : 'outline'}
+                    onClick={() => handleCategoryButtonClick(cat.name)}
+                    className="flex flex-col h-auto py-2 px-1 text-center items-center justify-center space-y-1"
+                    size="sm"
+                  >
+                    <cat.Icon className="w-5 h-5 mb-0.5" />
+                    <span className="text-xs leading-tight">{cat.name}</span>
+                  </Button>
+                ))}
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date" className="flex items-center gap-1"><CalendarDays className="w-4 h-4 text-muted-foreground" />Date*</Label>
                 <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
               </div>
+               <div className="space-y-2">
+                <Label htmlFor="weight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Weight (kg, optional)</Label>
+                <Input id="weight" name="weight" type="number" step="0.01" value={formData.weight || ''} onChange={handleInputChange} placeholder="e.g., 0.5" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="weight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Weight (kg, optional)</Label>
-              <Input id="weight" name="weight" type="number" step="0.01" value={formData.weight || ''} onChange={handleInputChange} placeholder="e.g., 0.5" />
-            </div>
+           
             <div className="space-y-2">
               <Label htmlFor="notes" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Notes (optional)</Label>
               <Textarea id="notes" name="notes" value={formData.notes || ''} onChange={handleInputChange} placeholder="e.g., From lunch, collected from park" />
@@ -286,12 +310,14 @@ export default function LogPage() {
           <p className="text-muted-foreground text-center py-4">Your waste log is empty. Start logging items above!</p>
         ) : (
           <div className="space-y-3">
-            {wasteLog.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(item => (
+            {wasteLog.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(item => {
+              const ItemIcon = getCategoryIcon(item.category);
+              return (
               <Card key={item.id} className={cn("shadow-sm hover:shadow-md transition-shadow", item.sourceType === 'business' ? 'border-primary/50' : '')}>
                 <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                        {item.category === 'Organic' ? <Leaf className="w-5 h-5 text-green-600" /> : <Archive className="w-5 h-5 text-blue-600" />}
+                        <ItemIcon className="w-5 h-5 text-muted-foreground" />
                         <p className="font-semibold text-lg">{item.name}</p>
                     </div>
                      {item.sourceType === 'business' && item.businessName && (
@@ -331,7 +357,7 @@ export default function LogPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )})}
           </div>
         )}
       </section>

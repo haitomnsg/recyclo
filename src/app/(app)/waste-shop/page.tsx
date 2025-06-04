@@ -15,7 +15,7 @@ import { sampleThriftItems, thriftCategories, allThriftCategoryValue } from '@/d
 import { Badge } from "@/components/ui/badge";
 import { 
   ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Search, FilterX,
-  Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins, Recycle, AlertTriangle, StickyNote, Eye, ShoppingCart
+  Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins, Recycle, AlertTriangle, StickyNote, Eye, ShoppingCart, Brush
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -40,13 +40,14 @@ const wasteCategoryIcons: Record<WasteListingCategory, React.ElementType> = {
   Other: Package,
 };
 
-const thriftCategoryIcons: Record<ThriftItemCategory, React.ElementType> = {
+const thriftCategoryIcons: Record<ThriftItemCategory | 'All', React.ElementType> = {
   Clothes: Shirt,
   Electronics: Laptop,
   Books: BookOpen,
   Toys: ToyBrick,
   Furniture: Sofa,
   Other: Package,
+  All: Diamond, // Icon for "All Categories"
 };
 
 export default function WasteShopPage() {
@@ -362,7 +363,9 @@ export default function WasteShopPage() {
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={allThriftCategoryValue}>All Categories</SelectItem>
+                    <SelectItem value={allThriftCategoryValue}>
+                        <span className="flex items-center"><Diamond className="w-4 h-4 mr-2" />All Categories</span>
+                    </SelectItem>
                     {thriftCategories.map(cat => {
                       const IconComp = thriftCategoryIcons[cat] || Package;
                       return (
@@ -386,7 +389,7 @@ export default function WasteShopPage() {
                     const IconComp = thriftCategoryIcons[item.category] || Package;
                     return (
                     <Card key={item.id} className="shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
-                      <div className="relative w-full h-44 bg-muted">
+                      <div className="relative w-full h-40 bg-muted"> {/* Reduced height */}
                         <Image 
                           src={item.imageUrl} 
                           alt={item.name} 
@@ -397,7 +400,9 @@ export default function WasteShopPage() {
                       </div>
                       <CardHeader className="p-3 pb-1">
                         <div className="flex justify-between items-start gap-2">
-                          <CardTitle className="text-base font-semibold line-clamp-2 leading-tight mt-0.5">{item.name}</CardTitle>
+                          <CardTitle className="text-base font-semibold line-clamp-2 leading-tight mt-0.5">
+                            {item.name}
+                          </CardTitle>
                           <Badge variant="secondary" className="whitespace-nowrap flex items-center gap-1 text-xs">
                             <IconComp className="w-3 h-3" /> {item.category}
                           </Badge>
@@ -408,7 +413,7 @@ export default function WasteShopPage() {
                         <p className="text-lg font-bold text-primary">Rs. {item.price.toLocaleString()}</p>
                       </CardContent>
                       <CardFooter className="p-3 border-t flex flex-col sm:flex-row gap-2">
-                        <Button variant="outline" size="sm" className="w-full">
+                         <Button variant="outline" size="sm" className="w-full">
                           <Eye className="mr-2 h-4 w-4" /> View Product
                         </Button>
                          <Button variant="default" size="sm" className="w-full">

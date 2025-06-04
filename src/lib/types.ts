@@ -10,10 +10,20 @@ export interface OnboardingCardContent {
   Icon?: LucideIcon; // Optional icon for the card title
 }
 
+export type WasteCategory = 
+  | 'Clothes' 
+  | 'Electronics' 
+  | 'Books' 
+  | 'Furniture' 
+  | 'Toys' 
+  | 'Art and Craft' 
+  | 'Organic Fertilizer' 
+  | 'Other';
+
 export interface WasteItem {
   id: string;
   name: string;
-  category: 'Organic' | 'Inorganic';
+  category: WasteCategory; // Updated category type
   date: string; // ISO string
   weight?: number; // in kg
   notes?: string;
@@ -64,7 +74,7 @@ export interface DirtySpot {
   address?: string;
   photoDataUrl?: string; // Photo of the dirty spot
   description?: string;
-  status: 'Dirty' | 'Cleaned'; // Capitalized and simplified status
+  status: 'Dirty' | 'Cleaned'; 
   reportedBy?: string;
   reportedDate: string; // ISO string
   cleanedDetails?: CleanedDetails;
