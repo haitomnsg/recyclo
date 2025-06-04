@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'r
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Loader2, PlusCircle, MapPin as MapPinIcon, AlertTriangle, CheckCircle, Trash2, Camera, CalendarDays, Users, StickyNote, Save, WandSparkles, Trophy } from 'lucide-react';
+import { Loader2, PlusCircle, MapPin as MapPinIcon, AlertTriangle, CheckCircle, User, WandSparkles, Save, Camera, CalendarDays, Users, StickyNote, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,12 +60,11 @@ export default function MapPage() {
     const storedSpotsString = localStorage.getItem(DIRTY_SPOTS_STORAGE_KEY);
     const storedSpots: DirtySpot[] = storedSpotsString ? JSON.parse(storedSpotsString) : [];
     
-    // Combine sample spots and stored spots, giving preference to stored if IDs match
     const combinedSpots = [...sampleDirtySpots];
     storedSpots.forEach(stored => {
       const existingIndex = combinedSpots.findIndex(s => s.id === stored.id);
       if (existingIndex > -1) {
-        combinedSpots[existingIndex] = stored; // Replace sample with stored if same ID
+        combinedSpots[existingIndex] = stored; 
       } else {
         combinedSpots.push(stored);
       }
@@ -87,8 +86,12 @@ export default function MapPage() {
   
   const openCleanedDialog = (spot: DirtySpot) => {
     setIsCleanedDialogSpot(spot);
-    setCleanedFormState(initialCleanedFormState);
+    setCleanedFormState({
+      ...initialCleanedFormState,
+      dateCleaned: new Date().toISOString().split('T')[0] // ensure date is current
+    });
     setCleanedPhotoPreview(null);
+    if (cleanedFileRef.current) cleanedFileRef.current.value = "";
   };
 
   const handleCleanedFormInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -141,7 +144,7 @@ export default function MapPage() {
     setDirtySpots(updatedSpots);
     localStorage.setItem(DIRTY_SPOTS_STORAGE_KEY, JSON.stringify(updatedSpots));
     toast({ title: "Spot Cleaned!", description: `${isCleanedDialogSpot.title} has been marked as cleaned.` });
-    setIsCleanedDialogSpot(null);
+    setIsCleanedDialogSpot(null); // Close dialog
   };
 
   const getAiHint = (title: string): string => {
@@ -256,12 +259,15 @@ export default function MapPage() {
                     Reported by: {spot.reportedBy || 'Anonymous'} on {new Date(spot.reportedDate).toLocaleDateString()}
                   </p>
                   {spot.status === 'cleaned' && spot.cleanedDetails && (
-                    <div className="mt-2 p-2 bg-green-50 rounded-md border border-green-200 text-xs">
-                      <p className="font-semibold text-green-700">Cleaned by: {spot.cleanedDetails.cleanedBy}</p>
+                    <div className="mt-2 p-2 bg-green-500/10 rounded-md border border-green-500/30 text-xs text-green-700">
+                      <p className="font-semibold">Cleaned by: {spot.cleanedDetails.cleanedBy}</p>
                       <p>Date: {new Date(spot.cleanedDetails.dateCleaned).toLocaleDateString()}</p>
                       <p>Volunteers: {spot.cleanedDetails.volunteersInvolved}</p>
+                      {spot.cleanedDetails.notes && <p className="italic mt-1">Notes: {spot.cleanedDetails.notes}</p>}
                       {spot.cleanedDetails.photoDataUrl && (
-                        <Image src={spot.cleanedDetails.photoDataUrl} alt="Cleaned spot" width={80} height={60} className="rounded mt-1"/>
+                        <div className="mt-1 relative w-20 h-16">
+                           <Image src={spot.cleanedDetails.photoDataUrl} alt="Cleaned spot" layout="fill" objectFit="cover" className="rounded"/>
+                        </div>
                       )}
                     </div>
                   )}
@@ -283,32 +289,38 @@ export default function MapPage() {
         <Dialog open={!!isCleanedDialogSpot} onOpenChange={(open) => { if(!open) setIsCleanedDialogSpot(null); }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Report Cleanup for: {isCleanedDialogSpot.title}</DialogTitle>
+              <DialogTitle className="flex items-center gap-2"><WandSparkles className="text-primary"/>Report Cleanup for: {isCleanedDialogSpot.title}</DialogTitle>
               <DialogDescription>
-                Thank you for cleaning! Please provide the details below.
+                Thank you for helping keep Kathmandu clean! Please provide the details of the cleanup.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCleanedSubmit} className="space-y-4 py-2">
               <div>
-                <Label htmlFor="cleanedBy" className="flex items-center gap-1"><User className="w-4 h-4 text-muted-foreground"/>Cleaned By*</Label>
+                <Label htmlFor="cleanedBy" className="flex items-center gap-1 text-sm"><User className="w-4 h-4 text-muted-foreground"/>Cleaned By*</Label>
                 <Input id="cleanedBy" name="cleanedBy" value={cleanedFormState.cleanedBy} onChange={handleCleanedFormInputChange} required placeholder="Your Name / Group Name"/>
               </div>
-              <div>
-                <Label htmlFor="dateCleaned" className="flex items-center gap-1"><CalendarDays className="w-4 h-4 text-muted-foreground"/>Date Cleaned*</Label>
-                <Input id="dateCleaned" name="dateCleaned" type="date" value={cleanedFormState.dateCleaned} onChange={handleCleanedFormInputChange} required/>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="dateCleaned" className="flex items-center gap-1 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground"/>Date Cleaned*</Label>
+                  <Input id="dateCleaned" name="dateCleaned" type="date" value={cleanedFormState.dateCleaned} onChange={handleCleanedFormInputChange} required/>
+                </div>
+                <div>
+                  <Label htmlFor="volunteersInvolved" className="flex items-center gap-1 text-sm"><Users className="w-4 h-4 text-muted-foreground"/>Volunteers*</Label>
+                  <Input id="volunteersInvolved" name="volunteersInvolved" type="number" min="1" value={cleanedFormState.volunteersInvolved} onChange={handleCleanedFormInputChange} required/>
+                </div>
               </div>
               <div>
-                <Label htmlFor="volunteersInvolved" className="flex items-center gap-1"><Users className="w-4 h-4 text-muted-foreground"/>Volunteers Involved*</Label>
-                <Input id="volunteersInvolved" name="volunteersInvolved" type="number" min="1" value={cleanedFormState.volunteersInvolved} onChange={handleCleanedFormInputChange} required/>
-              </div>
-              <div>
-                <Label htmlFor="cleanedPhoto" className="flex items-center gap-1"><Camera className="w-4 h-4 text-muted-foreground"/>Photo of Cleaned Area (Optional)</Label>
+                <Label htmlFor="cleanedPhoto" className="flex items-center gap-1 text-sm"><Camera className="w-4 h-4 text-muted-foreground"/>Photo of Cleaned Area (Optional)</Label>
                 <Input id="cleanedPhoto" type="file" accept="image/*" onChange={handleCleanedPhotoChange} ref={cleanedFileRef} className="file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:rounded-lg file:px-3 file:py-2 file:border-0"/>
-                {cleanedPhotoPreview && <Image src={cleanedPhotoPreview} alt="Cleaned preview" width={100} height={75} className="rounded-md mt-2 object-cover"/>}
+                {cleanedPhotoPreview && 
+                  <div className="mt-2 border rounded-md p-1 inline-block">
+                    <Image src={cleanedPhotoPreview} alt="Cleaned preview" width={100} height={75} className="rounded-md object-cover"/>
+                  </div>
+                }
               </div>
               <div>
-                <Label htmlFor="notes" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground"/>Notes (Optional)</Label>
-                <Textarea id="notes" name="notes" value={cleanedFormState.notes || ''} onChange={handleCleanedFormInputChange} placeholder="Any additional details..."/>
+                <Label htmlFor="notes" className="flex items-center gap-1 text-sm"><StickyNote className="w-4 h-4 text-muted-foreground"/>Notes (Optional)</Label>
+                <Textarea id="notes" name="notes" value={cleanedFormState.notes || ''} onChange={handleCleanedFormInputChange} placeholder="Any additional details about the cleanup..."/>
               </div>
               <DialogFooter className="pt-2">
                 <DialogClose asChild>
