@@ -11,9 +11,10 @@ export function AppHeader() {
           <Leaf className="w-7 h-7" />
           <h1 className="text-2xl font-bold font-headline">EcoCycle</h1>
         </Link>
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/log" aria-label="Log Waste">
-            <ListPlus className="h-6 w-6 text-primary" />
+        <Button variant="outline" asChild>
+          <Link href="/log">
+            <ListPlus className="h-5 w-5 mr-2" />
+            Log Waste
           </Link>
         </Button>
       </div>

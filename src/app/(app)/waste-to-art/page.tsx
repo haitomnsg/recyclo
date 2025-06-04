@@ -27,7 +27,7 @@ export default function WasteToArtPage() {
   useEffect(() => {
     const getCameraPermission = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -58,9 +58,8 @@ export default function WasteToArtPage() {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      // Set canvas dimensions to match video
       const aspectRatio = video.videoWidth / video.videoHeight;
-      canvas.width = 640; // Or a preferred width
+      canvas.width = 640; 
       canvas.height = canvas.width / aspectRatio;
       
       const context = canvas.getContext('2d');
