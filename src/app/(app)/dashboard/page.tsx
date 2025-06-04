@@ -92,22 +92,22 @@ export default function DashboardPage() {
     const listedWaste: WasteListing[] = listedWasteString ? JSON.parse(listedWasteString) : [];
     setRecentListings(listedWaste.slice(0, 3));
 
-    const organicFertilizerCount = loggedWaste.filter(item => item.category === 'Organic Fertilizer').length;
-    const otherWasteCount = loggedWaste.filter(item => item.category === 'Other General Waste').length;
+    const organicWasteCount = loggedWaste.filter(item => item.category === 'Organic').length;
+    const inorganicWasteCount = loggedWaste.filter(item => item.category === 'Inorganic').length;
 
     const reportedCount = dirtySpots.filter(spot => spot.status === 'Dirty' || spot.status === 'Cleaned').length; 
     const cleanedCount = dirtySpots.filter(spot => spot.status === 'Cleaned').length;
     const wasteShopItemsCount = listedWaste.length;
 
     setKeyMetrics([
-      { label: 'Organic Fertilizer Logged', value: organicFertilizerCount, Icon: Sprout, colorClass: '[&>div]:bg-green-500', progressMax: 50 },
-      { label: 'Other Waste Logged', value: otherWasteCount, Icon: Archive, colorClass: '[&>div]:bg-blue-500', progressMax: 50 },
+      { label: 'Organic Waste Logged', value: organicWasteCount, Icon: Sprout, colorClass: '[&>div]:bg-green-500', progressMax: 50 },
+      { label: 'Inorganic Waste Logged', value: inorganicWasteCount, Icon: Archive, colorClass: '[&>div]:bg-blue-500', progressMax: 50 },
       { label: 'Dirty Spots Reported', value: reportedCount, Icon: AlertTriangle, colorClass: '[&>div]:bg-orange-500', progressMax: 10 },
       { label: 'Dirty Spots Cleaned', value: cleanedCount, Icon: CheckCircle, colorClass: '[&>div]:bg-teal-500', progressMax: 5 },
       { label: 'WasteShop Items Listed', value: wasteShopItemsCount, Icon: ShoppingBag, colorClass: '[&>div]:bg-pink-500', progressMax: 20 },
     ]);
     
-    const currentScore = (organicFertilizerCount * 1) + (otherWasteCount * 1) + (reportedCount * 10) + (cleanedCount * 100) + (wasteShopItemsCount * 5);
+    const currentScore = (organicWasteCount * 1) + (inorganicWasteCount * 1) + (reportedCount * 10) + (cleanedCount * 100) + (wasteShopItemsCount * 5);
     setEcoScore(currentScore);
     
     const level = getEcoLevel(currentScore);

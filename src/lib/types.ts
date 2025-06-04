@@ -10,15 +10,13 @@ export interface OnboardingCardContent {
   Icon?: LucideIcon; // Optional icon for the card title
 }
 
-// Updated WasteCategory for the Log page - Simplified
-export type WasteCategory = 
-  | 'Organic Fertilizer' 
-  | 'Other General Waste';
+// Simplified WasteCategory for the Log page
+export type WasteCategory = 'Organic' | 'Inorganic';
 
 export interface WasteItem {
   id: string;
   name: string;
-  category: WasteCategory; // Uses the new simplified WasteCategory
+  category: WasteCategory; 
   date: string; // ISO string
   weight?: number; // in grams
   notes?: string;
@@ -97,4 +95,3 @@ export interface ThriftItem {
   imageUrl: string;
   imageHint: string; // For data-ai-hint
 }
-

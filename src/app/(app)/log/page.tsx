@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { WasteItem, WasteCategory } from '@/lib/types'; // Updated WasteCategory import
+import type { WasteItem, WasteCategory } from '@/lib/types';
 import { 
   ListPlus, Trash2, Edit3, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone,
   Sprout, Package as PackageIcon // Icons for simplified categories
@@ -23,13 +23,13 @@ const PREFILL_KEY = 'prefillWasteLog';
 type LogMode = 'public' | 'business';
 
 const simplifiedWasteCategories: { name: WasteCategory; Icon: React.ElementType }[] = [
-  { name: 'Organic Fertilizer', Icon: Sprout },
-  { name: 'Other General Waste', Icon: PackageIcon },
+  { name: 'Organic', Icon: Sprout },
+  { name: 'Inorganic', Icon: PackageIcon },
 ];
 
 const initialFormState: Omit<WasteItem, 'id' | 'sourceType'> & { date: string } = {
   name: '',
-  category: 'Other General Waste', 
+  category: 'Inorganic', 
   date: new Date().toISOString().split('T')[0], 
   weight: undefined, // Weight in grams
   notes: '',
@@ -54,11 +54,11 @@ export default function LogPage() {
 
     const prefillDataString = localStorage.getItem(PREFILL_KEY);
     if (prefillDataString) {
-      const prefillData = JSON.parse(prefillDataString) as Partial<Pick<WasteItem, 'category'>>; // Only prefill category
+      const prefillData = JSON.parse(prefillDataString) as Partial<Pick<WasteItem, 'category' | 'name'>>;
       setFormData(prev => ({
         ...prev,
-        name: '', // Clear name, user will input
-        category: prefillData.category || 'Other General Waste',
+        name: prefillData.name || '', 
+        category: prefillData.category || 'Inorganic',
       }));
       localStorage.removeItem(PREFILL_KEY); 
     }
@@ -209,7 +209,7 @@ export default function LogPage() {
             {selectedRecyclingCategory && currentPartners.length > 0 && (
               <div className="space-y-3 mt-4">
                 <h4 className="font-semibold text-lg text-foreground">
-                  Partners for {selectedRecyclingCategory}:
+                  Partners for {recyclingCategories.find(rc => rc.type === selectedRecyclingCategory)?.label}:
                 </h4>
                 {currentPartners.map(partner => (
                   <Card key={partner.id} className="p-3 shadow-sm">
@@ -223,7 +223,7 @@ export default function LogPage() {
               </div>
             )}
              {selectedRecyclingCategory && currentPartners.length === 0 && (
-                <p className="text-muted-foreground text-center mt-4">No partners listed for {selectedRecyclingCategory} yet.</p>
+                <p className="text-muted-foreground text-center mt-4">No partners listed for {recyclingCategories.find(rc => rc.type === selectedRecyclingCategory)?.label} yet.</p>
             )}
           </CardContent>
         </Card>
@@ -241,17 +241,17 @@ export default function LogPage() {
           <CardContent className="space-y-4">
             {logMode === 'business' && (
               <div className="space-y-2">
-                <Label htmlFor="businessName" className="flex items-center gap-1"><Briefcase className="w-4 h-4 text-muted-foreground" />Business Name*</Label>
+                <Label htmlFor="businessName"><Briefcase className="w-4 h-4 text-muted-foreground inline mr-1" />Business Name*</Label>
                 <Input id="businessName" name="businessName" value={formData.businessName || ''} onChange={handleInputChange} placeholder="e.g., My Awesome Cafe" required={logMode === 'business'} />
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Item Name*</Label>
+              <Label htmlFor="name"><StickyNote className="w-4 h-4 text-muted-foreground inline mr-1" />Item Name*</Label>
               <Input id="name" name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g., Banana Peels, Plastic Bottle" required />
             </div>
             
             <div className="space-y-2">
-              <Label className="flex items-center gap-1"><PackageIcon className="w-4 h-4 text-muted-foreground" />Category*</Label>
+              <Label><PackageIcon className="w-4 h-4 text-muted-foreground inline mr-1" />Category*</Label>
               <div className="grid grid-cols-2 gap-2">
                 {simplifiedWasteCategories.map(cat => (
                   <Button
@@ -271,17 +271,17 @@ export default function LogPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date" className="flex items-center gap-1"><CalendarDays className="w-4 h-4 text-muted-foreground" />Date*</Label>
+                <Label htmlFor="date"><CalendarDays className="w-4 h-4 text-muted-foreground inline mr-1" />Date*</Label>
                 <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
               </div>
                <div className="space-y-2">
-                <Label htmlFor="weight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Weight (grams)</Label>
+                <Label htmlFor="weight"><Weight className="w-4 h-4 text-muted-foreground inline mr-1" />Weight (grams)</Label>
                 <Input id="weight" name="weight" type="number" step="any" min="0" value={formData.weight === undefined ? '' : formData.weight} onChange={handleInputChange} placeholder="e.g., 500" />
               </div>
             </div>
            
             <div className="space-y-2">
-              <Label htmlFor="notes" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Notes</Label>
+              <Label htmlFor="notes"><StickyNote className="w-4 h-4 text-muted-foreground inline mr-1" />Notes</Label>
               <Textarea id="notes" name="notes" value={formData.notes || ''} onChange={handleInputChange} placeholder="e.g., From lunch, collected from park" />
             </div>
           </CardContent>
@@ -358,4 +358,3 @@ export default function LogPage() {
     </div>
   );
 }
-
