@@ -17,6 +17,8 @@ export interface WasteItem {
   date: string; // ISO string
   weight?: number; // in kg
   notes?: string;
+  sourceType: 'public' | 'business'; // New field
+  businessName?: string; // Optional for business logs
 }
 
 export interface WasteListing {
@@ -27,4 +29,21 @@ export interface WasteListing {
   estimatedWeight?: number; // in kg
   contactMethod: string; // e.g., location, phone, email
   dateListed: string; // ISO string
+}
+
+// For Recycling Partners Directory
+export interface RecyclingPartner {
+  id: string;
+  name: string;
+  contact: string; // Could be phone, email, or address
+  description: string;
+  materials: RecyclingCategoryType[]; // Which materials they handle
+}
+
+export type RecyclingCategoryType = 'Paper' | 'Plastic' | 'Compost' | 'Bottles';
+
+export interface RecyclingCategory {
+  type: RecyclingCategoryType;
+  label: string;
+  Icon: LucideIcon;
 }

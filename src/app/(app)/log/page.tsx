@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, type FormEvent } from 'react';
@@ -7,26 +8,35 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { WasteItem } from '@/lib/types';
-import { ListPlus, Trash2, Edit3, Leaf, Archive, CalendarDays, Weight, StickyNote, Save, XCircle } from 'lucide-react';
+import type { WasteItem, RecyclingCategoryType } from '@/lib/types';
+import { ListPlus, Trash2, Edit3, Leaf, Archive, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { recyclingCategories, getPartnersByCategory, type RecyclingPartner } from '@/data/recycling-partners';
+import { cn } from '@/lib/utils';
 
 const WASTE_LOG_KEY = 'ecoCycleWasteLog';
 const PREFILL_KEY = 'prefillWasteLog';
 
-const initialFormState: Omit<WasteItem, 'id' | 'date'> & { date: string } = {
+type LogMode = 'public' | 'business';
+
+const initialFormState: Omit<WasteItem, 'id' | 'date' | 'sourceType'> & { date: string } = {
   name: '',
   category: 'Organic',
   date: new Date().toISOString().split('T')[0], // Default to today
   weight: undefined,
   notes: '',
+  businessName: '',
 };
 
 export default function LogPage() {
   const [wasteLog, setWasteLog] = useState<WasteItem[]>([]);
   const [formData, setFormData] = useState(initialFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [logMode, setLogMode] = useState<LogMode>('public');
+  const [selectedRecyclingCategory, setSelectedRecyclingCategory] = useState<RecyclingCategoryType | null>(null);
+  const [currentPartners, setCurrentPartners] = useState<RecyclingPartner[]>([]);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,6 +57,14 @@ export default function LogPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (selectedRecyclingCategory) {
+      setCurrentPartners(getPartnersByCategory(selectedRecyclingCategory));
+    } else {
+      setCurrentPartners([]);
+    }
+  }, [selectedRecyclingCategory]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: name === 'weight' ? (value ? parseFloat(value) : undefined) : value }));
@@ -62,31 +80,44 @@ export default function LogPage() {
         toast({ variant: "destructive", title: "Missing Information", description: "Please enter item name and date." });
         return;
     }
+    if (logMode === 'business' && !formData.businessName) {
+        toast({ variant: "destructive", title: "Missing Business Name", description: "Please enter the business name." });
+        return;
+    }
 
     let updatedLog;
+    const itemData = { 
+      ...formData, 
+      sourceType: logMode,
+      businessName: logMode === 'business' ? formData.businessName : undefined,
+    };
+
     if (editingId) {
-      updatedLog = wasteLog.map(item => item.id === editingId ? { ...formData, id: editingId, date: new Date(formData.date).toISOString() } : item);
+      updatedLog = wasteLog.map(item => item.id === editingId ? { ...itemData, id: editingId, date: new Date(formData.date).toISOString() } : item);
       toast({ title: "Item Updated", description: `"${formData.name}" has been updated.` });
     } else {
-      const newItem: WasteItem = { ...formData, id: Date.now().toString(), date: new Date(formData.date).toISOString() };
+      const newItem: WasteItem = { ...itemData, id: Date.now().toString(), date: new Date(formData.date).toISOString() };
       updatedLog = [newItem, ...wasteLog];
       toast({ title: "Item Logged", description: `"${formData.name}" has been added to your log.` });
     }
     setWasteLog(updatedLog);
     localStorage.setItem(WASTE_LOG_KEY, JSON.stringify(updatedLog));
-    setFormData(initialFormState);
+    setFormData(initialFormState); // Reset with businessName cleared too
     setEditingId(null);
   };
 
   const handleEdit = (item: WasteItem) => {
     setEditingId(item.id);
+    setLogMode(item.sourceType);
     setFormData({
         name: item.name,
         category: item.category,
         date: item.date.split('T')[0], // Format for date input
         weight: item.weight,
         notes: item.notes,
+        businessName: item.businessName || '',
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = (id: string) => {
@@ -105,11 +136,86 @@ export default function LogPage() {
     setEditingId(null);
   }
 
+  const handleModeChange = (newMode: LogMode) => {
+    setLogMode(newMode);
+    setFormData(initialFormState); // Reset form when switching modes
+    setEditingId(null);
+    setSelectedRecyclingCategory(null); // Reset category selection
+  };
+  
+  const handleRecyclingCategoryClick = (categoryType: RecyclingCategoryType) => {
+    setSelectedRecyclingCategory(prev => prev === categoryType ? null : categoryType);
+  };
+
   return (
     <div className="space-y-8">
+      <div className="flex justify-center space-x-2 mb-6">
+        <Button
+          variant={logMode === 'public' ? 'default' : 'outline'}
+          onClick={() => handleModeChange('public')}
+          className="flex-1 sm:flex-initial"
+        >
+          <Users className="mr-2 h-4 w-4" /> For Public
+        </Button>
+        <Button
+          variant={logMode === 'business' ? 'default' : 'outline'}
+          onClick={() => handleModeChange('business')}
+          className="flex-1 sm:flex-initial"
+        >
+          <Briefcase className="mr-2 h-4 w-4" /> For Business
+        </Button>
+      </div>
+
       <h2 className="text-3xl font-bold font-headline text-center text-primary">
-        {editingId ? 'Edit Waste Item' : 'Log Your Waste'}
+        {editingId ? 'Edit Waste Item' : `Log Your Waste (${logMode === 'public' ? 'Public' : 'Business'})`}
       </h2>
+
+      {logMode === 'business' && (
+        <Card className="shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Info className="w-5 h-5 text-primary" />
+              Connect with Recycling Partners
+            </CardTitle>
+            <CardDescription>Find organizations that can help recycle specific waste materials.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              {recyclingCategories.map(category => (
+                <Button
+                  key={category.type}
+                  variant={selectedRecyclingCategory === category.type ? "default" : "outline"}
+                  onClick={() => handleRecyclingCategoryClick(category.type)}
+                  className="flex flex-col h-auto items-center justify-center p-3 space-y-1 text-center"
+                >
+                  <category.Icon className="w-6 h-6 mb-1" />
+                  <span className="text-xs sm:text-sm">{category.label}</span>
+                </Button>
+              ))}
+            </div>
+            {selectedRecyclingCategory && currentPartners.length > 0 && (
+              <div className="space-y-3 mt-4">
+                <h4 className="font-semibold text-lg text-foreground">
+                  Partners for {selectedRecyclingCategory}:
+                </h4>
+                {currentPartners.map(partner => (
+                  <Card key={partner.id} className="p-3 shadow-sm">
+                    <p className="font-semibold text-md text-primary">{partner.name}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Phone className="w-3 h-3"/> {partner.contact}
+                    </p>
+                    <p className="text-xs text-foreground/80 mt-1">{partner.description}</p>
+                  </Card>
+                ))}
+              </div>
+            )}
+             {selectedRecyclingCategory && currentPartners.length === 0 && (
+                <p className="text-muted-foreground text-center mt-4">No partners listed for {selectedRecyclingCategory} yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="shadow-lg">
         <form onSubmit={handleSubmit}>
           <CardHeader>
@@ -120,6 +226,12 @@ export default function LogPage() {
             <CardDescription>Keep track of your daily waste production.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {logMode === 'business' && (
+              <div className="space-y-2">
+                <Label htmlFor="businessName" className="flex items-center gap-1"><Briefcase className="w-4 h-4 text-muted-foreground" />Business Name*</Label>
+                <Input id="businessName" name="businessName" value={formData.businessName || ''} onChange={handleInputChange} placeholder="e.g., My Awesome Cafe" required={logMode === 'business'} />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Item Name*</Label>
               <Input id="name" name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g., Banana Peels, Plastic Bottle" required />
@@ -174,21 +286,26 @@ export default function LogPage() {
           <p className="text-muted-foreground text-center py-4">Your waste log is empty. Start logging items above!</p>
         ) : (
           <div className="space-y-3">
-            {wasteLog.map(item => (
-              <Card key={item.id} className="shadow-sm hover:shadow-md transition-shadow">
+            {wasteLog.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(item => (
+              <Card key={item.id} className={cn("shadow-sm hover:shadow-md transition-shadow", item.sourceType === 'business' ? 'border-primary/50' : '')}>
                 <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <div className="flex items-center gap-2">
                         {item.category === 'Organic' ? <Leaf className="w-5 h-5 text-green-600" /> : <Archive className="w-5 h-5 text-blue-600" />}
                         <p className="font-semibold text-lg">{item.name}</p>
                     </div>
+                     {item.sourceType === 'business' && item.businessName && (
+                      <p className="text-xs text-primary font-medium flex items-center gap-1">
+                        <Briefcase className="w-3 h-3" /> {item.businessName}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {new Date(item.date).toLocaleDateString()} - {item.category}
                       {item.weight && ` - ${item.weight} kg`}
                     </p>
                     {item.notes && <p className="text-xs text-foreground/70 mt-1 italic">Notes: {item.notes}</p>}
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 self-start sm:self-center">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(item)} aria-label={`Edit ${item.name}`}>
                       <Edit3 className="h-4 w-4" />
                     </Button>
