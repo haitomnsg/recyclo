@@ -187,8 +187,11 @@ export default function DashboardPage() {
               <currentEcoLevel.Icon className={`w-10 h-10 sm:w-12 sm:h-12 ${currentEcoLevel.color}`} />
             </div>
             <div className="flex-grow space-y-1">
-              <p className={`text-sm font-semibold ${currentEcoLevel.color}`}>{currentEcoLevel.name}</p>
-              <p className="text-3xl font-bold text-foreground">{ecoScore}</p>
+              <div>
+                <p className="text-xs text-muted-foreground">Eco Level</p>
+                <p className={`text-lg font-semibold ${currentEcoLevel.color}`}>{currentEcoLevel.name}</p>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{ecoScore} pts</p>
               <div className="w-full">
                 <Progress value={progressToNextLevel} className="h-2 sm:h-2.5 [&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-primary" />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -295,4 +298,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
