@@ -21,9 +21,11 @@ export interface WasteItem {
   businessName?: string;
 }
 
+export type WasteListingCategory = 'Organic' | 'Inorganic' | 'Recyclable' | 'Hazardous' | 'Other';
+
 export interface WasteListing {
   id:string;
-  category: 'Organic' | 'Inorganic' | 'Recyclable' | 'Hazardous' | 'Other';
+  category: WasteListingCategory;
   description: string;
   photoDataUrl?: string; // Base64 string
   estimatedWeight?: number; // in kg
@@ -76,4 +78,16 @@ export interface DirtyZoneReportFormData {
   longitude: string; // Keep as string for form input, parse to number on save
   photoDataUrl?: string;
   reportedBy: string;
+}
+
+export type ThriftItemCategory = 'Clothes' | 'Electronics' | 'Books' | 'Toys' | 'Furniture' | 'Other';
+
+export interface ThriftItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: ThriftItemCategory;
+  imageUrl: string;
+  imageHint: string; // For data-ai-hint
 }
