@@ -32,7 +32,8 @@ const KATHMANDU_CENTER: google.maps.LatLngLiteral = { lat: 27.7172, lng: 85.3240
 const DEFAULT_ZOOM = 12;
 const DIRTY_SPOTS_STORAGE_KEY = 'ecoCycleDirtySpots';
 
-interface CleanedFormState extends Omit<CleanedDetails, 'photoDataUrl'> {
+interface CleanedFormState extends Omit<CleanedDetails, 'photoDataUrl' | 'dateCleaned'> {
+  dateCleaned: string; // Keep as string for input type="date"
   photoFile?: File | null;
 }
 
@@ -60,16 +61,11 @@ export default function MapPage() {
     const storedSpotsString = localStorage.getItem(DIRTY_SPOTS_STORAGE_KEY);
     const storedSpots: DirtySpot[] = storedSpotsString ? JSON.parse(storedSpotsString) : [];
     
-    const combinedSpots = [...sampleDirtySpots];
-    storedSpots.forEach(stored => {
-      const existingIndex = combinedSpots.findIndex(s => s.id === stored.id);
-      if (existingIndex > -1) {
-        combinedSpots[existingIndex] = stored; 
-      } else {
-        combinedSpots.push(stored);
-      }
-    });
-    setDirtySpots(combinedSpots.sort((a,b) => new Date(b.reportedDate).getTime() - new Date(a.reportedDate).getTime() ));
+    const combinedSpotsMap = new Map<string, DirtySpot>();
+    sampleDirtySpots.forEach(spot => combinedSpotsMap.set(spot.id, spot));
+    storedSpots.forEach(spot => combinedSpotsMap.set(spot.id, spot)); // User spots override sample spots if IDs match
+    
+    setDirtySpots(Array.from(combinedSpotsMap.values()).sort((a,b) => new Date(b.reportedDate).getTime() - new Date(a.reportedDate).getTime() ));
   }, []);
 
   const handleMarkerClick = (spot: DirtySpot) => {
@@ -138,7 +134,7 @@ export default function MapPage() {
 
     const updatedSpots = dirtySpots.map(spot =>
       spot.id === isCleanedDialogSpot.id
-        ? { ...spot, status: 'Cleaned' as const, cleanedDetails: updatedDetails }
+        ? { ...spot, status: 'Cleaned', cleanedDetails: updatedDetails }
         : spot
     );
     setDirtySpots(updatedSpots);
@@ -296,21 +292,21 @@ export default function MapPage() {
             </DialogHeader>
             <form onSubmit={handleCleanedSubmit} className="space-y-4 py-2">
               <div>
-                <Label htmlFor="cleanedBy" className="flex items-center gap-1 text-sm"><User className="w-4 h-4 text-muted-foreground"/>Cleaned By*</Label>
+                <Label htmlFor="cleanedBy" className="flex items-center gap-1 text-sm mb-1.5"><User className="w-4 h-4 text-muted-foreground"/>Cleaned By*</Label>
                 <Input id="cleanedBy" name="cleanedBy" value={cleanedFormState.cleanedBy} onChange={handleCleanedFormInputChange} required placeholder="Your Name / Group Name"/>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="dateCleaned" className="flex items-center gap-1 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground"/>Date Cleaned*</Label>
+                  <Label htmlFor="dateCleaned" className="flex items-center gap-1 text-sm mb-1.5"><CalendarDays className="w-4 h-4 text-muted-foreground"/>Date Cleaned*</Label>
                   <Input id="dateCleaned" name="dateCleaned" type="date" value={cleanedFormState.dateCleaned} onChange={handleCleanedFormInputChange} required/>
                 </div>
                 <div>
-                  <Label htmlFor="volunteersInvolved" className="flex items-center gap-1 text-sm"><Users className="w-4 h-4 text-muted-foreground"/>Volunteers*</Label>
+                  <Label htmlFor="volunteersInvolved" className="flex items-center gap-1 text-sm mb-1.5"><Users className="w-4 h-4 text-muted-foreground"/>Volunteers*</Label>
                   <Input id="volunteersInvolved" name="volunteersInvolved" type="number" min="1" value={cleanedFormState.volunteersInvolved} onChange={handleCleanedFormInputChange} required/>
                 </div>
               </div>
               <div>
-                <Label htmlFor="cleanedPhoto" className="flex items-center gap-1 text-sm"><Camera className="w-4 h-4 text-muted-foreground"/>Photo of Cleaned Area (Optional)</Label>
+                <Label htmlFor="cleanedPhoto" className="flex items-center gap-1 text-sm mb-1.5"><Camera className="w-4 h-4 text-muted-foreground"/>Photo of Cleaned Area (Optional)</Label>
                 <Input id="cleanedPhoto" type="file" accept="image/*" onChange={handleCleanedPhotoChange} ref={cleanedFileRef} className="file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:rounded-lg file:px-3 file:py-2 file:border-0"/>
                 {cleanedPhotoPreview && 
                   <div className="mt-2 border rounded-md p-1 inline-block">
@@ -319,7 +315,7 @@ export default function MapPage() {
                 }
               </div>
               <div>
-                <Label htmlFor="notes" className="flex items-center gap-1 text-sm"><StickyNote className="w-4 h-4 text-muted-foreground"/>Notes (Optional)</Label>
+                <Label htmlFor="notes" className="flex items-center gap-1 text-sm mb-1.5"><StickyNote className="w-4 h-4 text-muted-foreground"/>Notes (Optional)</Label>
                 <Textarea id="notes" name="notes" value={cleanedFormState.notes || ''} onChange={handleCleanedFormInputChange} placeholder="Any additional details about the cleanup..."/>
               </div>
               <DialogFooter className="pt-2">
