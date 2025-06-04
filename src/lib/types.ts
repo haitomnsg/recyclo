@@ -47,3 +47,18 @@ export interface RecyclingCategory {
   label: string;
   Icon: LucideIcon;
 }
+
+export interface DirtySpot {
+  id: string;
+  name: string;
+  position: google.maps.LatLngLiteral;
+  address?: string;
+}
+
+export interface DirtyZoneReport {
+  id: string;
+  description: string;
+  location: string; // Textual description of location
+  photoDataUrl?: string; // Base64 string for the image
+  reportedDate: string; // ISO string
+}

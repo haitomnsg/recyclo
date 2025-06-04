@@ -3,11 +3,12 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { Loader2, PlusCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { sampleDirtySpots } from '@/data/dirty-spots';
-import type { DirtySpot } from '@/lib/types';
+import type { DirtySpot } from '@/lib/types'; // Ensure correct import
 
 // Dynamically import MapDisplay as it uses client-side Google Maps API
 const MapDisplay = dynamic(() => import('@/components/app/map-display'), {
@@ -57,14 +58,16 @@ export default function MapPage() {
   }
 
   return (
-    <div className="flex flex-col space-y-4 h-full"> {/* Use h-full if PageContainer allows expansion */}
+    <div className="flex flex-col space-y-4 h-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h2 className="text-2xl md:text-3xl font-bold font-headline text-primary">
           Community Reported Dirty Spots
         </h2>
-        <Button variant="default" className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-5 w-5" />
-          Report New Dirty Spot
+        <Button variant="default" className="w-full sm:w-auto" asChild>
+          <Link href="/report-zone">
+            <PlusCircle className="mr-2 h-5 w-5" />
+            Report New Dirty Spot
+          </Link>
         </Button>
       </div>
 
@@ -82,7 +85,7 @@ export default function MapPage() {
       </div>
 
       {/* List of Dirty Spots - Scrollable */}
-      <div className="flex-grow overflow-y-auto space-y-3 pr-1 pb-4"> {/* Added pb-4 for some breathing room at the bottom */}
+      <div className="flex-grow overflow-y-auto space-y-3 pr-1 pb-4">
         <h3 className="text-xl font-semibold font-headline text-foreground sticky top-0 bg-background/80 backdrop-blur-sm py-2 z-10">
           Reported Locations:
         </h3>
@@ -91,8 +94,8 @@ export default function MapPage() {
         ) : (
           <div className="space-y-3">
             {sampleDirtySpots.map((spot) => (
-              <Card 
-                key={spot.id} 
+              <Card
+                key={spot.id}
                 className="hover:shadow-md transition-shadow cursor-pointer bg-card"
                 onClick={() => handleListItemClick(spot)}
               >
