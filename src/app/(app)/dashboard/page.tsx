@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -30,6 +31,7 @@ import {
   Mail,
   Phone,
   HandCoins,
+  LogOut,
 } from 'lucide-react';
 import type { WasteItem, WasteListing, DirtySpot, WasteCategory, ThriftItem, ThriftItemCategory, WasteListingCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -39,6 +41,7 @@ import { sampleThriftItems, thriftCategoryIcons, allThriftCategoryValue } from '
 const WASTE_LOG_KEY = 'ecoCycleWasteLog';
 const DIRTY_SPOTS_KEY = 'ecoCycleDirtySpots';
 const WASTE_LISTINGS_KEY = 'ecoCycleWasteListings';
+const ECOCYCLE_LOGGED_IN_KEY = 'ecoCycleLoggedIn';
 
 interface EcoLevel {
   name: string;
@@ -88,6 +91,7 @@ export default function DashboardPage() {
   const [keyMetrics, setKeyMetrics] = useState<MetricDetail[]>([]);
   const [featuredThriftItems, setFeaturedThriftItems] = useState<ThriftItem[]>([]);
   const [featuredUserListings, setFeaturedUserListings] = useState<WasteListing[]>([]);
+  const router = useRouter();
 
 
   useEffect(() => {
@@ -146,7 +150,7 @@ export default function DashboardPage() {
   const quickActions = [
     { href: '/classify', label: 'Classify Waste', Icon: Camera, description: 'Identify waste type with AI' },
     { href: '/waste-to-art', label: 'Waste-to-Art', Icon: Brush, description: 'Get creative reuse ideas' },
-    { href: '/waste-shop', label: 'List Your Waste', Icon: ShoppingBag, description: 'Offer items for exchange' },
+    { href: '/waste-shop#listWaste', label: 'List Your Waste', Icon: ShoppingBag, description: 'Offer items for exchange' },
     { href: '/waste-shop#thriftShop', label: 'Thrift Store', Icon: Diamond, description: 'Browse upcycled items' },
     { href: '/map', label: 'View/Report Spots', Icon: MapPin, description: 'See & report dirty areas' },
     { href: '/leaderboard', label: 'Leaderboard', Icon: Trophy, description: 'Check your eco-rank' },
@@ -164,79 +168,78 @@ export default function DashboardPage() {
     return `Progressing in ${currentEcoLevel.name}`;
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem(ECOCYCLE_LOGGED_IN_KEY);
+    router.replace('/login');
+  };
+
   return (
     <div className="space-y-8">
-      <section>
-        <h2 className="text-2xl font-semibold font-headline mb-3 text-foreground">Key Impact</h2>
-        <Card className="shadow-lg">
-          <CardContent className="space-y-4 pt-6">
-            {keyMetrics.map(metric => (
-              <div key={metric.label} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <metric.Icon className={`w-4 h-4 ${metric.colorClass.replace('[&>div]:bg-', 'text-')}`} />
-                    <span>{metric.label}</span>
-                  </div>
-                  <span className="font-semibold text-foreground">{metric.value}</span>
+      <h2 className="text-2xl font-semibold font-headline text-foreground">Key Impact</h2>
+      <Card className="shadow-lg">
+        <CardContent className="space-y-4 pt-6">
+          {keyMetrics.map(metric => (
+            <div key={metric.label} className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <metric.Icon className={`w-4 h-4 ${metric.colorClass.replace('[&>div]:bg-', 'text-')}`} />
+                  <span>{metric.label}</span>
                 </div>
-                <Progress
-                    value={metric.progressMax > 0 ? (metric.value / metric.progressMax) * 100 : 0}
-                    className={`h-2.5 ${metric.colorClass}`}
-                />
+                <span className="font-semibold text-foreground">{metric.value}</span>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-semibold font-headline mb-3 text-foreground">Eco Level</h2>
-        <Card className="shadow-lg border-2 border-primary/20">
-          <CardContent className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
-            <div className="flex-shrink-0">
-              <currentEcoLevel.Icon className={`w-10 h-10 sm:w-12 sm:h-12 ${currentEcoLevel.color}`} />
+              <Progress
+                  value={metric.progressMax > 0 ? (metric.value / metric.progressMax) * 100 : 0}
+                  className={`h-2.5 ${metric.colorClass}`}
+              />
             </div>
-            <div className="flex-grow space-y-1">
-              <p className={`text-lg font-semibold ${currentEcoLevel.color}`}>{currentEcoLevel.name}</p>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{ecoScore} pts</p>
-              <div className="w-full">
-                <Progress value={progressToNextLevel} className="h-2 sm:h-2.5 [&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-primary" />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {pointsToNextLevelText()}
-                </p>
-              </div>
-               <Button variant="link" asChild className="p-0 h-auto text-xs text-primary hover:underline mt-1">
-                  <Link href="/leaderboard">View Leaderboard</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-semibold font-headline mb-4 text-foreground">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {quickActions.map(action => (
-            <Link href={action.href} key={action.label} legacyBehavior>
-              <a className="block group">
-                <Card className="hover:shadow-xl transition-shadow duration-300 h-full flex flex-col ring-1 ring-border hover:ring-primary/50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-center mb-3">
-                       <div className="p-3 bg-primary/10 rounded-full">
-                          <action.Icon className="h-7 w-7 text-primary" />
-                       </div>
-                    </div>
-                    <CardTitle className="text-lg font-semibold font-headline text-center">{action.label}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-grow pt-0">
-                    <p className="text-sm text-muted-foreground text-center">{action.description}</p>
-                  </CardContent>
-                </Card>
-              </a>
-            </Link>
           ))}
-        </div>
-      </section>
+        </CardContent>
+      </Card>
+
+      <h2 className="text-2xl font-semibold font-headline text-foreground">Eco Level</h2>
+      <Card className="shadow-lg border-2 border-primary/20">
+        <CardContent className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
+          <div className="flex-shrink-0">
+            <currentEcoLevel.Icon className={`w-10 h-10 sm:w-12 sm:h-12 ${currentEcoLevel.color}`} />
+          </div>
+          <div className="flex-grow space-y-1">
+            <p className={`text-lg font-semibold ${currentEcoLevel.color}`}>{currentEcoLevel.name}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{ecoScore} pts</p>
+            <div className="w-full">
+              <Progress value={progressToNextLevel} className="h-2 sm:h-2.5 [&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-primary" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {pointsToNextLevelText()}
+              </p>
+            </div>
+              <Button variant="link" asChild className="p-0 h-auto text-xs text-primary hover:underline mt-1">
+                <Link href="/leaderboard">View Leaderboard</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <h2 className="text-2xl font-semibold font-headline text-foreground">Quick Actions</h2>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {quickActions.map(action => (
+          <Link href={action.href} key={action.label} legacyBehavior>
+            <a className="block group">
+              <Card className="hover:shadow-xl transition-shadow duration-300 h-full flex flex-col ring-1 ring-border hover:ring-primary/50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-center mb-3">
+                      <div className="p-3 bg-primary/10 rounded-full">
+                        <action.Icon className="h-7 w-7 text-primary" />
+                      </div>
+                  </div>
+                  <CardTitle className="text-lg font-semibold font-headline text-center">{action.label}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow pt-0">
+                  <p className="text-sm text-muted-foreground text-center">{action.description}</p>
+                </CardContent>
+              </Card>
+            </a>
+          </Link>
+        ))}
+      </div>
 
       <section>
         <div className="flex justify-between items-center mb-4">
@@ -267,8 +270,9 @@ export default function DashboardPage() {
                     <Image
                       src={item.imageUrl}
                       alt={item.name}
-                      layout="fill"
-                      objectFit="cover"
+                      fill // Use fill instead of layout="fill" and objectFit="cover" for Next 13+
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                      style={{ objectFit: "cover" }}
                       className="rounded-t-lg"
                       data-ai-hint={item.imageHint}
                     />
@@ -288,11 +292,11 @@ export default function DashboardPage() {
                     <p className="text-lg font-bold text-primary">Rs. {item.price.toLocaleString()}</p>
                   </CardContent>
                   <CardFooter className="p-3 border-t flex flex-col sm:flex-row gap-2">
-                     <Button variant="outline" size="sm" className="w-full">
+                      <Button variant="outline" size="sm" className="w-full">
                       <Eye className="mr-2 h-4 w-4" /> View Product
                     </Button>
-                     <Button variant="default" size="sm" className="w-full">
-                       <ShoppingCart className="mr-2 h-4 w-4" /> Buy Product
+                      <Button variant="default" size="sm" className="w-full">
+                        <ShoppingCart className="mr-2 h-4 w-4" /> Buy Product
                     </Button>
                   </CardFooter>
                 </Card>
@@ -307,7 +311,7 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-semibold font-headline text-foreground">Your Recent WasteShop Items</h2>
           {featuredUserListings.length > 0 && (
             <Button variant="link" asChild>
-              <Link href="/waste-shop">View All Your Listings</Link>
+              <Link href="/waste-shop#listWaste">View All Your Listings</Link>
             </Button>
           )}
         </div>
@@ -317,7 +321,7 @@ export default function DashboardPage() {
               <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">You haven't listed any items for exchange yet.</p>
               <Button asChild>
-                <Link href="/waste-shop">List an Item Now</Link>
+                <Link href="/waste-shop#listWaste">List an Item Now</Link>
               </Button>
             </CardContent>
           </Card>
@@ -326,14 +330,15 @@ export default function DashboardPage() {
             {featuredUserListings.map(item => {
               const IconComp = userListingCategoryIcons[item.category as WasteListingCategory] || Package;
               return (
-                <Card key={item.id} className="shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
+                <Card key={item.id} id={`listing-${item.id}`} className="shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
                   {item.photoDataUrl && (
                     <div className="relative w-full h-32 bg-muted">
                       <Image
                         src={item.photoDataUrl}
                         alt={item.description.substring(0,30)}
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        style={{ objectFit: "cover" }}
                         className="rounded-t-lg"
                       />
                     </div>
@@ -341,23 +346,23 @@ export default function DashboardPage() {
                   <CardHeader className="p-3 pb-1">
                     <div className="flex justify-between items-start gap-2">
                       <CardTitle className="text-sm font-semibold line-clamp-1 leading-tight mt-0.5 flex items-center">
-                         <IconComp className="w-4 h-4 mr-2 flex-shrink-0" /> {item.category}
+                          <IconComp className="w-4 h-4 mr-2 flex-shrink-0" /> {item.category}
                       </CardTitle>
                       <Badge variant="outline" className="text-xs">{new Date(item.dateListed).toLocaleDateString()}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 pt-1 flex-grow">
                     <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">{item.description}</p>
-                     <p className="text-xs font-medium text-primary flex items-center gap-1">
+                      <p className="text-xs font-medium text-primary flex items-center gap-1">
                         {item.contactMethod.includes('@') ? <Mail className="w-3 h-3" /> : (item.contactMethod.match(/\d/) ? <Phone className="w-3 h-3" /> : <MapPin className="w-3 h-3" />)}
                         {item.contactMethod}
                     </p>
                   </CardContent>
                   <CardFooter className="p-3 border-t">
-                     <Button variant="outline" size="sm" className="w-full" asChild>
-                       <Link href={`/waste-shop#listing-${item.id}`}>
-                         <Eye className="mr-2 h-4 w-4" /> View Listing
-                       </Link>
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <Link href={`/waste-shop#listing-${item.id}`}>
+                          <Eye className="mr-2 h-4 w-4" /> View Listing
+                        </Link>
                     </Button>
                   </CardFooter>
                 </Card>
@@ -367,15 +372,16 @@ export default function DashboardPage() {
         )}
       </section>
 
-      <div className="text-center mt-8">
+      <div className="text-center mt-8 space-y-2">
         <Button variant="link" asChild>
           <Link href="/onboarding" className="text-primary hover:underline">
             Revisit Onboarding Tips
           </Link>
         </Button>
+        <Button variant="link" onClick={handleLogout} className="text-destructive hover:underline">
+          <LogOut className="mr-2 h-4 w-4" /> Logout
+        </Button>
       </div>
     </div>
   );
 }
-
-    
