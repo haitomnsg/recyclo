@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sampleThriftItems, thriftCategories, allThriftCategoryValue } from '@/data/thrift-items';
 import { 
   ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Search, FilterX,
-  Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins
+  Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins, Recycle, AlertTriangle, StickyNote
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -32,10 +32,10 @@ const initialFormState: Omit<WasteListing, 'id' | 'dateListed'> = {
 };
 
 const wasteCategoryIcons: Record<WasteListingCategory, React.ElementType> = {
-  Organic: HandCoins, // More fitting for organic waste that might be compost/sold
+  Organic: HandCoins,
   Inorganic: Package,
-  Recyclable: RecycleIcon,
-  Hazardous: AlertTriangleIcon,
+  Recyclable: Recycle, // Corrected: Use imported Recycle
+  Hazardous: AlertTriangle, // Corrected: Use imported AlertTriangle
   Other: Package,
 };
 
@@ -189,13 +189,6 @@ export default function WasteShopPage() {
     setSelectedThriftCategory(allThriftCategoryValue);
   };
   
-  // Lucide icons, some might be duplicates from original code but keeping for clarity.
-  const Leaf = HandCoins; // Re-aliasing for consistency with wasteCategoryIcons
-  const Archive = Package;
-  const RecycleIcon = wasteCategoryIcons.Recyclable; // Using the one from wasteCategoryIcons
-  const AlertTriangleIcon = wasteCategoryIcons.Hazardous;
-
-
   return (
     <div className="space-y-6">
       <Tabs defaultValue="listWaste" className="w-full">
@@ -429,11 +422,5 @@ export default function WasteShopPage() {
     </div>
   );
 }
-// Re-importing necessary icons to avoid conflicts or missing imports
-const StickyNote = ShoppingBag; // Placeholder if StickyNote is not imported. Use a fitting icon.
-// Lucide icons needed for the original Waste Listing part that might have been overwritten
-// Ensure these are available if they were distinct from the thrift shop icons.
-// const Leaf = HandCoins; //Already aliased
-// const Archive = Package; //Already aliased
-const RecycleIconOriginal = wasteCategoryIcons.Recyclable; //Alias for clarity
-const AlertTriangleIconOriginal = wasteCategoryIcons.Hazardous; //Alias for clarity
+
+    
