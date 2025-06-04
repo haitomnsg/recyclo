@@ -3,14 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ScanLine, ListPlus, MapPin, Brush, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, ScanLine, MapPin, Brush, ShoppingBag } from 'lucide-react'; // Removed ListPlus
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
   { href: '/classify', label: 'Classify', Icon: ScanLine },
-  { href: '/log', label: 'Log Waste', Icon: ListPlus },
   { href: '/map', label: 'Map', Icon: MapPin },
   { href: '/waste-to-art', label: 'Art Ideas', Icon: Brush },
   { href: '/waste-shop', label: 'WasteShop', Icon: ShoppingBag },

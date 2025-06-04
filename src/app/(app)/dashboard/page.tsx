@@ -4,22 +4,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  BarChart as RechartsBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  CartesianGrid,
-} from 'recharts';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   Camera,
   ListPlus,
@@ -32,8 +18,10 @@ import {
   Archive,
   AlertTriangle,
   CheckCircle,
-  BarChart2,
   Package,
+  Star,
+  ShieldCheck,
+  Rocket,
 } from 'lucide-react';
 import type { WasteItem, WasteListing, DirtySpot } from '@/lib/types';
 
@@ -41,14 +29,35 @@ const WASTE_LOG_KEY = 'ecoCycleWasteLog';
 const DIRTY_SPOTS_KEY = 'ecoCycleDirtySpots';
 const WASTE_LISTINGS_KEY = 'ecoCycleWasteListings';
 
-interface ChartDataItem {
+interface EcoLevel {
   name: string;
-  value: number;
-  fill: string;
+  minScore: number;
+  Icon: React.ElementType;
+  color: string;
+  targetScore: number; // Score needed to reach this level or, for the highest, a symbolic max
 }
 
+const ecoLevels: EcoLevel[] = [
+  { name: 'Eco Starter', minScore: 0, Icon: Star, color: 'text-yellow-500', targetScore: 100 },
+  { name: 'Eco Contributor', minScore: 100, Icon: Sprout, color: 'text-lime-500', targetScore: 500 },
+  { name: 'Eco Guardian', minScore: 500, Icon: ShieldCheck, color: 'text-green-500', targetScore: 1500 },
+  { name: 'Eco Hero', minScore: 1500, Icon: Rocket, color: 'text-teal-500', targetScore: 5000 }, // Target can be conceptual for the highest level
+];
+
+const getEcoLevel = (score: number): EcoLevel => {
+  for (let i = ecoLevels.length - 1; i >= 0; i--) {
+    if (score >= ecoLevels[i].minScore) {
+      return ecoLevels[i];
+    }
+  }
+  return ecoLevels[0]; // Default to starter
+};
+
 export default function DashboardPage() {
-  const [chartData, setChartData] = useState<ChartDataItem[]>([]);
+  const [ecoScore, setEcoScore] = useState(0);
+  const [currentEcoLevel, setCurrentEcoLevel] = useState<EcoLevel>(ecoLevels[0]);
+  const [progressToNextLevel, setProgressToNextLevel] = useState(0);
+
   const [impactStats, setImpactStats] = useState({
     totalWasteLogged: 0,
     organicLogged: 0,
@@ -70,28 +79,44 @@ export default function DashboardPage() {
 
     const organicCount = loggedWaste.filter(item => item.category === 'Organic').length;
     const inorganicCount = loggedWaste.filter(item => item.category === 'Inorganic').length;
+    const reportedCount = dirtySpots.length;
     const cleanedCount = dirtySpots.filter(spot => spot.status === 'Cleaned').length;
 
     setImpactStats({
       totalWasteLogged: loggedWaste.length,
       organicLogged: organicCount,
       inorganicLogged: inorganicCount,
-      dirtySpotsReported: dirtySpots.length,
+      dirtySpotsReported: reportedCount,
       spotsCleaned: cleanedCount,
       itemsInWasteShop: listedWaste.length,
     });
 
-    setChartData([
-      { name: 'Organic Logged', value: organicCount, fill: 'hsl(var(--chart-1))' },
-      { name: 'Inorganic Logged', value: inorganicCount, fill: 'hsl(var(--chart-2))' },
-      { name: 'Spots Reported', value: dirtySpots.length, fill: 'hsl(var(--chart-3))' },
-      { name: 'Spots Cleaned', value: cleanedCount, fill: 'hsl(var(--chart-4))' },
-    ]);
+    const currentScore = (loggedWaste.length * 1) + (reportedCount * 10) + (cleanedCount * 100);
+    setEcoScore(currentScore);
+    
+    const level = getEcoLevel(currentScore);
+    setCurrentEcoLevel(level);
+
+    const nextLevelIndex = ecoLevels.findIndex(l => l.minScore > currentScore);
+    let progress = 0;
+    if (level.minScore === ecoLevels[ecoLevels.length -1].minScore) { // Highest level
+        progress = 100;
+    } else if (nextLevelIndex !== -1) {
+        const nextLevel = ecoLevels[nextLevelIndex];
+        const scoreInCurrentLevel = currentScore - level.minScore;
+        const scoreNeededForNextLevel = nextLevel.minScore - level.minScore;
+        progress = Math.min(100, Math.max(0, (scoreInCurrentLevel / scoreNeededForNextLevel) * 100));
+    } else if (currentScore > 0) { // Should not happen if levels are defined correctly, but as a fallback
+        progress = 100;
+    }
+    setProgressToNextLevel(progress);
+
   }, []);
 
   const quickActions = [
     { href: '/classify', label: 'Classify Waste', Icon: Camera, description: 'Identify waste type with AI' },
-    { href: '/log', label: 'Log Your Waste', Icon: ListPlus, description: 'Record your daily waste' },
+    // Log Waste is now in header, can be removed or kept for redundancy
+    // { href: '/log', label: 'Log Your Waste', Icon: ListPlus, description: 'Record your daily waste' }, 
     { href: '/map', label: 'View/Report Spots', Icon: MapPin, description: 'See & report dirty areas' },
     { href: '/waste-shop', label: 'WasteShop', Icon: ShoppingBag, description: 'Sell or donate items' },
     { href: '/waste-to-art', label: 'Waste-to-Art', Icon: Brush, description: 'Get creative reuse ideas' },
@@ -106,62 +131,32 @@ export default function DashboardPage() {
     { label: 'Spots Cleaned by Community', value: impactStats.spotsCleaned, Icon: CheckCircle, color: 'text-teal-500' },
     { label: 'Items in WasteShop', value: impactStats.itemsInWasteShop, Icon: Package, color: 'text-purple-500' },
   ];
-
-  const chartConfig = {
-    value: { label: 'Count' },
-    // Colors are directly in chartData's fill property
-  };
   
-
   return (
     <div className="space-y-8">
       <section>
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-headline text-foreground flex items-center gap-2">
-              <BarChart2 className="w-6 h-6 text-primary" />
-              Activity Overview
-            </CardTitle>
-             <CardDescription>A summary of your eco-actions and community impact.</CardDescription>
+        <Card className="shadow-xl border-2 border-primary/30">
+          <CardHeader className="items-center text-center pb-3">
+            <currentEcoLevel.Icon className={`w-16 h-16 mb-2 ${currentEcoLevel.color}`} />
+            <CardTitle className={`text-3xl font-headline ${currentEcoLevel.color}`}>{currentEcoLevel.name}</CardTitle>
+            <CardDescription className="text-foreground/80">Your current ecological standing.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px] w-full">
-            {chartData.length > 0 ? (
-              <ChartContainer config={chartConfig} className="w-full h-full">
-                <RechartsBarChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
-                  layout="horizontal"
-                >
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.length > 15 ? value.substring(0,12) + "..." : value }
-                    angle={-10}
-                    textAnchor="end"
-                    height={50} 
-                  />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                  <Tooltip
-                    cursor={{ fill: 'hsl(var(--muted))', radius: 4 }}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
-                    {chartData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </RechartsBarChart>
-              </ChartContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                No activity data yet. Start logging!
-              </div>
-            )}
+          <CardContent className="text-center space-y-3">
+            <div className="text-5xl font-bold text-foreground">{ecoScore}</div>
+            <p className="text-sm text-muted-foreground">Eco Score Points</p>
+            <Progress value={progressToNextLevel} className="h-3 [&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-primary" />
+             <p className="text-xs text-muted-foreground">
+              {currentEcoLevel.minScore === ecoLevels[ecoLevels.length-1].minScore 
+                ? "You've reached the highest level!" 
+                : `${ecoLevels[ecoLevels.findIndex(l => l.minScore > ecoScore)]?.minScore - ecoScore || '...'} points to ${ecoLevels[ecoLevels.findIndex(l => l.minScore > ecoScore)]?.name || 'the next level'}`
+              }
+            </p>
           </CardContent>
+          <CardFooter className="pt-3 justify-center">
+            <Button variant="link" asChild>
+                <Link href="/leaderboard" className="text-sm">View Leaderboard</Link>
+            </Button>
+          </CardFooter>
         </Card>
       </section>
 

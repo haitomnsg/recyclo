@@ -1,5 +1,7 @@
+
 import Link from 'next/link';
-import { Leaf } from 'lucide-react';
+import { Leaf, ListPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function AppHeader() {
   return (
@@ -9,6 +11,11 @@ export function AppHeader() {
           <Leaf className="w-7 h-7" />
           <h1 className="text-2xl font-bold font-headline">EcoCycle</h1>
         </Link>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/log" aria-label="Log Waste">
+            <ListPlus className="h-6 w-6 text-primary" />
+          </Link>
+        </Button>
       </div>
     </header>
   );
