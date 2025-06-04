@@ -12,10 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import type { WasteListing, WasteListingCategory, ThriftItem, ThriftItemCategory } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sampleThriftItems, thriftCategories, allThriftCategoryValue } from '@/data/thrift-items';
-import { Badge } from "@/components/ui/badge"; // Added import
+import { Badge } from "@/components/ui/badge";
 import { 
   ShoppingBag, Tag, ImagePlus, Weight, Phone, Mail, MapPin, Save, Trash2, Edit3, XCircle, Search, FilterX,
-  Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins, Recycle, AlertTriangle, StickyNote
+  Shirt, Laptop, BookOpen, ToyBrick, Sofa, Package, Diamond, HandCoins, Recycle, AlertTriangle, StickyNote, Eye, ShoppingCart
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -381,12 +381,12 @@ export default function WasteShopPage() {
               {filteredThriftItems.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">No thrift items match your criteria. Try adjusting your search or filters!</p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredThriftItems.map(item => {
                     const IconComp = thriftCategoryIcons[item.category] || Package;
                     return (
                     <Card key={item.id} className="shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
-                      <div className="relative w-full h-52 bg-muted">
+                      <div className="relative w-full h-44 bg-muted">
                         <Image 
                           src={item.imageUrl} 
                           alt={item.name} 
@@ -395,21 +395,24 @@ export default function WasteShopPage() {
                           data-ai-hint={item.imageHint}
                         />
                       </div>
-                      <CardHeader className="p-4 pb-2">
+                      <CardHeader className="p-3 pb-1">
                         <div className="flex justify-between items-start gap-2">
-                          <CardTitle className="text-lg font-semibold line-clamp-2">{item.name}</CardTitle>
-                          <Badge variant="secondary" className="whitespace-nowrap flex items-center gap-1">
-                            <IconComp className="w-3.5 h-3.5" /> {item.category}
+                          <CardTitle className="text-base font-semibold line-clamp-2 leading-tight mt-0.5">{item.name}</CardTitle>
+                          <Badge variant="secondary" className="whitespace-nowrap flex items-center gap-1 text-xs">
+                            <IconComp className="w-3 h-3" /> {item.category}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className="p-4 pt-1 flex-grow">
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-2">{item.description}</p>
-                        <p className="text-xl font-bold text-primary">Rs. {item.price.toLocaleString()}</p>
+                      <CardContent className="p-3 pt-1 flex-grow">
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">{item.description}</p>
+                        <p className="text-lg font-bold text-primary">Rs. {item.price.toLocaleString()}</p>
                       </CardContent>
-                      <CardFooter className="p-4 border-t">
-                        <Button variant="default" className="w-full">
-                          View Details (Coming Soon)
+                      <CardFooter className="p-3 border-t flex flex-col sm:flex-row gap-2">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Eye className="mr-2 h-4 w-4" /> View Product
+                        </Button>
+                         <Button variant="default" size="sm" className="w-full">
+                           <ShoppingCart className="mr-2 h-4 w-4" /> Buy Product
                         </Button>
                       </CardFooter>
                     </Card>
@@ -423,5 +426,3 @@ export default function WasteShopPage() {
     </div>
   );
 }
-
-    
