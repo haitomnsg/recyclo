@@ -26,10 +26,8 @@ const MapDisplay = dynamic(() => import('@/components/app/map-display'), {
 
 export default function MapPage() {
   const [reportedZones, setReportedZones] = useState<DirtyZoneReport[]>([]);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // Ensure client-side localStorage access
     const storedReports = localStorage.getItem(DIRTY_ZONES_KEY);
     if (storedReports) {
       setReportedZones(JSON.parse(storedReports));
@@ -60,14 +58,8 @@ export default function MapPage() {
           <CardDescription>Interactive map showing the Kathmandu area. Reported zones are listed below.</CardDescription>
         </CardHeader>
         <CardContent>
-          {isClient ? (
-            <MapDisplay center={kathmanduCenter} zoom={13} />
-          ) : (
-            <div className="bg-muted/50 rounded-md aspect-[16/9] flex flex-col items-center justify-center min-h-[450px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-              <p className="text-muted-foreground">Loading map...</p>
-            </div>
-          )}
+          {/* Rely on dynamic import for client-side rendering and loading state */}
+          <MapDisplay center={kathmanduCenter} zoom={13} />
         </CardContent>
       </Card>
 

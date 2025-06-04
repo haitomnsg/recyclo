@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react'; // Import React for React.memo and useMemo
