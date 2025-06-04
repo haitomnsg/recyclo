@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'EcoCycle',
+  title: 'Recyclo',
   description: 'Household waste management for a cleaner Nepal.',
 };
 

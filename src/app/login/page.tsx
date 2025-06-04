@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Leaf, Mail, Lock, LogInIcon } from 'lucide-react';
+import { Trash2, Mail, Lock, LogInIcon } from 'lucide-react'; // Changed Leaf to Trash2
 import { useToast } from "@/hooks/use-toast";
 
-const ECOCYCLE_LOGGED_IN_KEY = 'ecoCycleLoggedIn';
-const ONBOARDING_COMPLETE_KEY = 'ecoCycleOnboardingComplete';
+const ECOCYCLE_LOGGED_IN_KEY = 'ecoCycleLoggedIn'; // Keeping internal key name for now
+const ONBOARDING_COMPLETE_KEY = 'ecoCycleOnboardingComplete'; // Keeping internal key name
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,7 +21,6 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // If already logged in, redirect to dashboard
     if (localStorage.getItem(ECOCYCLE_LOGGED_IN_KEY) === 'true') {
       router.replace('/dashboard');
     }
@@ -41,11 +40,10 @@ export default function LoginPage() {
       return;
     }
 
-    // Simulate login
     localStorage.setItem(ECOCYCLE_LOGGED_IN_KEY, 'true');
     toast({
       title: "Login Successful",
-      description: "Welcome to EcoCycle!",
+      description: "Welcome to Recyclo!", // Updated app name
     });
 
     const onboardingComplete = localStorage.getItem(ONBOARDING_COMPLETE_KEY);
@@ -61,8 +59,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <div className="flex flex-col items-center justify-center mb-2">
-            <Leaf className="w-16 h-16 text-primary mb-3" />
-            <CardTitle className="text-3xl font-headline text-primary">Welcome to EcoCycle</CardTitle>
+            <Trash2 className="w-16 h-16 text-primary mb-3" /> {/* Changed Icon */}
+            <CardTitle className="text-3xl font-headline text-primary">Welcome to Recyclo</CardTitle> {/* Updated App Name */}
           </div>
           <CardDescription className="text-foreground/80">
             Log in to manage your waste and contribute to a greener Nepal.
