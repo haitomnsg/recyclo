@@ -125,9 +125,10 @@ export default function ClassifyPage() {
   
   const handleLogItem = () => {
     if (classificationResult) {
+      // Only prefill the category, not the name
       const itemToLog = {
-        name: `Classified ${classificationResult.wasteType} item - ${classificationResult.explanation.substring(0, 30)}...`, // More descriptive name
-        category: classificationResult.wasteType === 'organic' ? 'Organic Fertilizer' : 'Other', // Use new specific categories
+        name: '', // User will fill this in on the log page
+        category: classificationResult.wasteType === 'organic' ? 'Organic Fertilizer' : 'Other General Waste',
       };
       localStorage.setItem('prefillWasteLog', JSON.stringify(itemToLog));
       router.push('/log');

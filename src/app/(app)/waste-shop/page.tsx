@@ -230,7 +230,7 @@ export default function WasteShopPage() {
                     <Textarea id="description" name="description" value={formData.description} onChange={handleInputChange} placeholder="e.g., Old newspapers, lightly used plastic containers" required />
                   </div>
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo (optional)</Label>
+                    <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo</Label>
                     <Label
                       htmlFor="photo-upload-listing"
                       className={cn(buttonVariants({ variant: "outline" }), "w-full cursor-pointer flex items-center justify-center")}
@@ -254,7 +254,7 @@ export default function WasteShopPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="estimatedWeight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Estimated Weight (kg, optional)</Label>
+                    <Label htmlFor="estimatedWeight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Estimated Weight (kg)</Label>
                     <Input id="estimatedWeight" name="estimatedWeight" type="number" step="0.1" value={formData.estimatedWeight || ''} onChange={handleInputChange} placeholder="e.g., 2.5" />
                   </div>
                   <div className="space-y-2">
@@ -284,7 +284,7 @@ export default function WasteShopPage() {
                   {listings.map(item => {
                     const IconComponent = wasteCategoryIcons[item.category] || Package;
                     return (
-                    <Card key={item.id} className="shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row overflow-hidden">
+                    <Card key={item.id} id={`listing-${item.id}`} className="shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row overflow-hidden">
                       {item.photoDataUrl && (
                         <div className="sm:w-1/4 w-full h-40 sm:h-auto relative shrink-0 bg-muted">
                           <Image src={item.photoDataUrl} alt={item.description.substring(0,30)} layout="fill" objectFit="cover" />

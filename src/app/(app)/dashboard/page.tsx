@@ -27,7 +27,7 @@ import {
   Leaf,
   Recycle as RecycleIcon,
 } from 'lucide-react';
-import type { WasteItem, WasteListing, DirtySpot, WasteCategory, ThriftItemCategory } from '@/lib/types'; // Added ThriftItemCategory
+import type { WasteItem, WasteListing, DirtySpot, WasteCategory } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 const WASTE_LOG_KEY = 'ecoCycleWasteLog';
@@ -93,7 +93,7 @@ export default function DashboardPage() {
     setRecentListings(listedWaste.slice(0, 3));
 
     const organicFertilizerCount = loggedWaste.filter(item => item.category === 'Organic Fertilizer').length;
-    const otherWasteCount = loggedWaste.filter(item => item.category !== 'Organic Fertilizer').length; // Updated logic
+    const otherWasteCount = loggedWaste.filter(item => item.category === 'Other General Waste').length;
 
     const reportedCount = dirtySpots.filter(spot => spot.status === 'Dirty' || spot.status === 'Cleaned').length; 
     const cleanedCount = dirtySpots.filter(spot => spot.status === 'Cleaned').length;
@@ -246,7 +246,7 @@ export default function DashboardPage() {
               <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">You haven't listed any items in the WasteShop yet.</p>
               <Button asChild>
-                <Link href="/waste-shop">List an Item Now</Link>
+                <Link href="/waste-shop#listWaste">List an Item Now</Link>
               </Button>
             </CardContent>
           </Card>

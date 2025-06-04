@@ -111,13 +111,13 @@ export default function ReportZonePage() {
               />
             </div>
              <div className="space-y-2">
-              <Label htmlFor="reportedBy" className="flex items-center gap-1"><User className="w-4 h-4 text-muted-foreground" />Your Name (Optional)</Label>
+              <Label htmlFor="reportedBy" className="flex items-center gap-1"><User className="w-4 h-4 text-muted-foreground" />Your Name</Label>
               <Input 
                 id="reportedBy" 
                 name="reportedBy" 
                 value={formData.reportedBy} 
                 onChange={handleInputChange} 
-                placeholder="e.g., John Doe" 
+                placeholder="e.g., John Doe (Leave blank for Anonymous)" 
               />
             </div>
             <div className="space-y-2">
@@ -161,7 +161,7 @@ export default function ReportZonePage() {
               </div>
             </div>
              <div className="space-y-2">
-              <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo of Dirty Spot (optional)</Label>
+              <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo of Dirty Spot</Label>
                <Label
                 htmlFor="photo-upload"
                 className={cn(

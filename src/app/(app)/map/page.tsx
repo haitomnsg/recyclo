@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Loader2, PlusCircle, MapPin as MapPinIcon, AlertTriangle, CheckCircle, User, WandSparkles, Save, Camera, CalendarDays, Users, StickyNote, Trophy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -63,7 +63,7 @@ export default function MapPage() {
     
     const combinedSpotsMap = new Map<string, DirtySpot>();
     sampleDirtySpots.forEach(spot => combinedSpotsMap.set(spot.id, spot));
-    storedSpots.forEach(spot => combinedSpotsMap.set(spot.id, spot)); // User spots override sample spots if IDs match
+    storedSpots.forEach(spot => combinedSpotsMap.set(spot.id, spot)); 
     
     setDirtySpots(Array.from(combinedSpotsMap.values()).sort((a,b) => new Date(b.reportedDate).getTime() - new Date(a.reportedDate).getTime() ));
   }, []);
@@ -301,13 +301,27 @@ export default function MapPage() {
                   <Input id="dateCleaned" name="dateCleaned" type="date" value={cleanedFormState.dateCleaned} onChange={handleCleanedFormInputChange} required/>
                 </div>
                 <div>
-                  <Label htmlFor="volunteersInvolved" className="flex items-center gap-1 text-sm mb-1.5"><Users className="w-4 h-4 text-muted-foreground"/>Volunteers*</Label>
+                  <Label htmlFor="volunteersInvolved" className="flex items-center gap-1 text-sm mb-1.5"><Users className="w-4 h-4 text-muted-foreground"/>Volunteers Involved*</Label>
                   <Input id="volunteersInvolved" name="volunteersInvolved" type="number" min="1" value={cleanedFormState.volunteersInvolved} onChange={handleCleanedFormInputChange} required/>
                 </div>
               </div>
               <div>
-                <Label htmlFor="cleanedPhoto" className="flex items-center gap-1 text-sm mb-1.5"><Camera className="w-4 h-4 text-muted-foreground"/>Photo of Cleaned Area (Optional)</Label>
-                <Input id="cleanedPhoto" type="file" accept="image/*" onChange={handleCleanedPhotoChange} ref={cleanedFileRef} className="file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:rounded-lg file:px-3 file:py-2 file:border-0"/>
+                <Label htmlFor="cleanedPhoto" className="flex items-center gap-1 text-sm mb-1.5"><Camera className="w-4 h-4 text-muted-foreground"/>Photo of Cleaned Area</Label>
+                <Label
+                    htmlFor="cleanedPhoto-upload"
+                    className={cn(buttonVariants({ variant: "outline" }), "w-full cursor-pointer flex items-center justify-center")}
+                >
+                    <Camera className="mr-2 h-4 w-4" />
+                    <span>{cleanedPhotoPreview ? "Change Photo" : "Upload Photo"}</span>
+                </Label>
+                <Input 
+                    id="cleanedPhoto-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleCleanedPhotoChange} 
+                    ref={cleanedFileRef} 
+                    className="hidden"
+                />
                 {cleanedPhotoPreview && 
                   <div className="mt-2 border rounded-md p-1 inline-block">
                     <Image src={cleanedPhotoPreview} alt="Cleaned preview" width={100} height={75} className="rounded-md object-cover"/>
@@ -315,14 +329,14 @@ export default function MapPage() {
                 }
               </div>
               <div>
-                <Label htmlFor="notes" className="flex items-center gap-1 text-sm mb-1.5"><StickyNote className="w-4 h-4 text-muted-foreground"/>Notes (Optional)</Label>
+                <Label htmlFor="notes" className="flex items-center gap-1 text-sm mb-1.5"><StickyNote className="w-4 h-4 text-muted-foreground"/>Notes</Label>
                 <Textarea id="notes" name="notes" value={cleanedFormState.notes || ''} onChange={handleCleanedFormInputChange} placeholder="Any additional details about the cleanup..."/>
               </div>
-              <DialogFooter className="pt-2">
+              <DialogFooter className="pt-2 sm:justify-end sm:space-x-2">
                 <DialogClose asChild>
-                  <Button type="button" variant="outline">Cancel</Button>
+                  <Button type="button" variant="outline" className="w-full sm:w-auto">Cancel</Button>
                 </DialogClose>
-                <Button type="submit">
+                <Button type="submit" className="w-full sm:w-auto mt-2 sm:mt-0">
                   <Save className="mr-2 h-4 w-4"/> Submit Verification
                 </Button>
               </DialogFooter>

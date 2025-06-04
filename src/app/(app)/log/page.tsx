@@ -7,14 +7,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { WasteItem, RecyclingCategoryType, WasteCategory } from '@/lib/types';
+import type { WasteItem, WasteCategory } from '@/lib/types'; // Updated WasteCategory import
 import { 
   ListPlus, Trash2, Edit3, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone,
-  Shirt, Laptop, BookOpen, Sofa, ToyBrick, Brush, Sprout, Package as PackageIcon, Archive // Added Archive
+  Sprout, Package as PackageIcon // Icons for simplified categories
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { recyclingCategories, getPartnersByCategory, type RecyclingPartner } from '@/data/recycling-partners';
+import { recyclingCategories, getPartnersByCategory, type RecyclingPartner, type RecyclingCategoryType } from '@/data/recycling-partners';
 import { cn } from '@/lib/utils';
 
 const WASTE_LOG_KEY = 'ecoCycleWasteLog';
@@ -22,22 +22,16 @@ const PREFILL_KEY = 'prefillWasteLog';
 
 type LogMode = 'public' | 'business';
 
-const detailedWasteCategories: { name: WasteCategory; Icon: React.ElementType }[] = [
-  { name: 'Clothes', Icon: Shirt },
-  { name: 'Electronics', Icon: Laptop },
-  { name: 'Books', Icon: BookOpen },
-  { name: 'Furniture', Icon: Sofa },
-  { name: 'Toys', Icon: ToyBrick },
-  { name: 'Art and Craft', Icon: Brush },
+const simplifiedWasteCategories: { name: WasteCategory; Icon: React.ElementType }[] = [
   { name: 'Organic Fertilizer', Icon: Sprout },
-  { name: 'Other', Icon: PackageIcon },
+  { name: 'Other General Waste', Icon: PackageIcon },
 ];
 
 const initialFormState: Omit<WasteItem, 'id' | 'sourceType'> & { date: string } = {
   name: '',
-  category: 'Other', 
+  category: 'Other General Waste', 
   date: new Date().toISOString().split('T')[0], 
-  weight: undefined,
+  weight: undefined, // Weight in grams
   notes: '',
   businessName: '',
 };
@@ -60,11 +54,11 @@ export default function LogPage() {
 
     const prefillDataString = localStorage.getItem(PREFILL_KEY);
     if (prefillDataString) {
-      const prefillData = JSON.parse(prefillDataString) as Partial<WasteItem>;
+      const prefillData = JSON.parse(prefillDataString) as Partial<Pick<WasteItem, 'category'>>; // Only prefill category
       setFormData(prev => ({
         ...prev,
-        name: prefillData.name || '',
-        category: prefillData.category || 'Other',
+        name: '', // Clear name, user will input
+        category: prefillData.category || 'Other General Waste',
       }));
       localStorage.removeItem(PREFILL_KEY); 
     }
@@ -161,7 +155,7 @@ export default function LogPage() {
   };
 
   const getCategoryIcon = (categoryName: WasteCategory): React.ElementType => {
-    const found = detailedWasteCategories.find(cat => cat.name === categoryName);
+    const found = simplifiedWasteCategories.find(cat => cat.name === categoryName);
     return found ? found.Icon : PackageIcon;
   };
 
@@ -196,7 +190,7 @@ export default function LogPage() {
               <Info className="w-5 h-5 text-primary" />
               Connect with Recycling Partners
             </CardTitle>
-            <CardDescription>Find organizations that can help recycle specific waste materials.</CardDescription>
+            <CardDescription>Find organizations that can help recycle specific waste materials (for businesses).</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
@@ -257,19 +251,19 @@ export default function LogPage() {
             </div>
             
             <div className="space-y-2">
-              <Label className="flex items-center gap-1"><Archive className="w-4 h-4 text-muted-foreground" />Category*</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {detailedWasteCategories.map(cat => (
+              <Label className="flex items-center gap-1"><PackageIcon className="w-4 h-4 text-muted-foreground" />Category*</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {simplifiedWasteCategories.map(cat => (
                   <Button
                     key={cat.name}
                     type="button"
                     variant={formData.category === cat.name ? 'default' : 'outline'}
                     onClick={() => handleCategoryButtonClick(cat.name)}
-                    className="flex flex-col h-auto py-2 px-1 text-center items-center justify-center space-y-1"
-                    size="sm"
+                    className="flex items-center justify-center space-x-2 py-3"
+                    size="lg"
                   >
-                    <cat.Icon className="w-5 h-5 mb-0.5" />
-                    <span className="text-xs leading-tight">{cat.name}</span>
+                    <cat.Icon className="w-5 h-5" />
+                    <span className="text-sm leading-tight">{cat.name}</span>
                   </Button>
                 ))}
               </div>
@@ -281,13 +275,13 @@ export default function LogPage() {
                 <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
               </div>
                <div className="space-y-2">
-                <Label htmlFor="weight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Weight (kg, optional)</Label>
-                <Input id="weight" name="weight" type="number" step="0.01" value={formData.weight || ''} onChange={handleInputChange} placeholder="e.g., 0.5" />
+                <Label htmlFor="weight" className="flex items-center gap-1"><Weight className="w-4 h-4 text-muted-foreground" />Weight (grams)</Label>
+                <Input id="weight" name="weight" type="number" step="any" min="0" value={formData.weight === undefined ? '' : formData.weight} onChange={handleInputChange} placeholder="e.g., 500" />
               </div>
             </div>
            
             <div className="space-y-2">
-              <Label htmlFor="notes" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Notes (optional)</Label>
+              <Label htmlFor="notes" className="flex items-center gap-1"><StickyNote className="w-4 h-4 text-muted-foreground" />Notes</Label>
               <Textarea id="notes" name="notes" value={formData.notes || ''} onChange={handleInputChange} placeholder="e.g., From lunch, collected from park" />
             </div>
           </CardContent>
@@ -327,7 +321,7 @@ export default function LogPage() {
                     )}
                     <p className="text-sm text-muted-foreground">
                       {new Date(item.date).toLocaleDateString()} - {item.category}
-                      {item.weight && ` - ${item.weight} kg`}
+                      {item.weight !== undefined && ` - ${item.weight} grams`}
                     </p>
                     {item.notes && <p className="text-xs text-foreground/70 mt-1 italic">Notes: {item.notes}</p>}
                   </div>
@@ -364,3 +358,4 @@ export default function LogPage() {
     </div>
   );
 }
+

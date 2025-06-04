@@ -10,23 +10,17 @@ export interface OnboardingCardContent {
   Icon?: LucideIcon; // Optional icon for the card title
 }
 
-// Updated WasteCategory for the Log page
+// Updated WasteCategory for the Log page - Simplified
 export type WasteCategory = 
-  | 'Clothes' 
-  | 'Electronics' 
-  | 'Books' 
-  | 'Furniture' 
-  | 'Toys' 
-  | 'Art and Craft' 
   | 'Organic Fertilizer' 
-  | 'Other';
+  | 'Other General Waste';
 
 export interface WasteItem {
   id: string;
   name: string;
-  category: WasteCategory; // Uses the new detailed WasteCategory
+  category: WasteCategory; // Uses the new simplified WasteCategory
   date: string; // ISO string
-  weight?: number; // in kg
+  weight?: number; // in grams
   notes?: string;
   sourceType: 'public' | 'business';
   businessName?: string;
@@ -103,3 +97,4 @@ export interface ThriftItem {
   imageUrl: string;
   imageHint: string; // For data-ai-hint
 }
+
