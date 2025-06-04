@@ -25,7 +25,7 @@ import {
   BarChart3,
   ListPlus,
   Leaf,
-  Recycle as RecycleIcon, // Renamed for clarity
+  Recycle as RecycleIcon,
 } from 'lucide-react';
 import type { WasteItem, WasteListing, DirtySpot } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -39,7 +39,7 @@ interface EcoLevel {
   minScore: number;
   Icon: React.ElementType;
   color: string;
-  targetScore: number;
+  targetScore: number; // Represents the minScore of the *next* level, or a high score if this is the top level
 }
 
 const ecoLevels: EcoLevel[] = [
@@ -107,25 +107,25 @@ export default function DashboardPage() {
       { label: 'WasteShop Items Listed', value: wasteShopItemsCount, Icon: ShoppingBag, colorClass: '[&>div]:bg-pink-500', progressMax: 20 },
     ]);
     
-    const currentScore = (organicCount * 1) + (inorganicCount * 1) + (reportedCount * 10) + (cleanedCount * 100) + (wasteShopItemsCount * 5); // Added WasteShop points
+    const currentScore = (organicCount * 1) + (inorganicCount * 1) + (reportedCount * 10) + (cleanedCount * 100) + (wasteShopItemsCount * 5);
     setEcoScore(currentScore);
     
     const level = getEcoLevel(currentScore);
     setCurrentEcoLevel(level);
 
-    const nextLevelIndex = ecoLevels.findIndex(l => l.minScore > currentScore);
+    const nextLevelDetails = ecoLevels.find(l => l.minScore > currentScore);
     let progress = 0;
-    if (level.minScore === ecoLevels[ecoLevels.length -1].minScore) { 
-        progress = 100;
-    } else if (nextLevelIndex !== -1) {
-        const nextLevel = ecoLevels[nextLevelIndex];
-        const scoreInCurrentLevel = currentScore - level.minScore;
-        const scoreNeededForNextLevel = nextLevel.minScore - level.minScore;
-        progress = Math.min(100, Math.max(0, (scoreInCurrentLevel / scoreNeededForNextLevel) * 100));
-    } else if (currentScore > 0) { 
-        progress = 100;
+    if (level.minScore === ecoLevels[ecoLevels.length - 1].minScore) { 
+        progress = 100; // Max level reached
+    } else if (nextLevelDetails) {
+        const scoreInCurrentLevelSpan = currentScore - level.minScore;
+        const scoreNeededForNextLevelSpan = nextLevelDetails.minScore - level.minScore;
+        progress = scoreNeededForNextLevelSpan > 0 ? Math.min(100, Math.max(0, (scoreInCurrentLevelSpan / scoreNeededForNextLevelSpan) * 100)) : 100;
+    } else { // Should not happen if ecoLevels are well defined, but a fallback
+        progress = (currentScore / level.targetScore) * 100; // Fallback to targetScore of current level
+        if (currentScore >= level.targetScore) progress = 100;
     }
-    setProgressToNextLevel(progress);
+    setProgressToNextLevel(Math.floor(progress));
 
   }, []);
 
@@ -136,36 +136,21 @@ export default function DashboardPage() {
     { href: '/waste-to-art', label: 'Waste-to-Art', Icon: Brush, description: 'Get creative reuse ideas' },
     { href: '/leaderboard', label: 'Leaderboard', Icon: Trophy, description: 'Check your eco-rank' },
   ];
+
+  const nextEcoLevel = ecoLevels.find(l => l.minScore > ecoScore);
+  const pointsToNextLevelText = () => {
+    if (currentEcoLevel.minScore === ecoLevels[ecoLevels.length - 1].minScore) {
+      return "You've reached the highest level!";
+    }
+    if (nextEcoLevel) {
+      const pointsNeeded = Math.max(0, nextEcoLevel.minScore - ecoScore);
+      return `${pointsNeeded} points to ${nextEcoLevel.name}`;
+    }
+    return `Progressing in ${currentEcoLevel.name}`;
+  };
   
   return (
     <div className="space-y-8">
-      <section>
-        <Card className="shadow-xl border-2 border-primary/30">
-          <CardHeader className="items-center text-center pb-3">
-            <currentEcoLevel.Icon className={`w-16 h-16 mb-2 ${currentEcoLevel.color}`} />
-            {/* Reduced font size for Eco Level name */}
-            <CardTitle className={`text-2xl font-headline ${currentEcoLevel.color}`}>{currentEcoLevel.name}</CardTitle>
-            <CardDescription className="text-foreground/80">Your current ecological standing.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-3">
-            <div className="text-5xl font-bold text-foreground">{ecoScore}</div>
-            <p className="text-sm text-muted-foreground">Eco Score Points</p>
-            <Progress value={progressToNextLevel} className="h-3 [&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-primary" />
-             <p className="text-xs text-muted-foreground">
-              {currentEcoLevel.minScore === ecoLevels[ecoLevels.length-1].minScore 
-                ? "You've reached the highest level!" 
-                : `${ecoLevels[ecoLevels.findIndex(l => l.minScore > ecoScore)]?.minScore - ecoScore || '...'} points to ${ecoLevels[ecoLevels.findIndex(l => l.minScore > ecoScore)]?.name || 'the next level'}`
-              }
-            </p>
-          </CardContent>
-          <CardFooter className="pt-3 justify-center">
-            <Button variant="link" asChild>
-                <Link href="/leaderboard" className="text-sm">View Leaderboard</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </section>
-
       <section>
         <Card className="shadow-lg">
           <CardHeader>
@@ -186,11 +171,34 @@ export default function DashboardPage() {
                   <span className="font-semibold text-foreground">{metric.value}</span>
                 </div>
                 <Progress 
-                    value={(metric.value / metric.progressMax) * 100} 
+                    value={metric.progressMax > 0 ? (metric.value / metric.progressMax) * 100 : 0} 
                     className={`h-2.5 ${metric.colorClass}`} 
                 />
               </div>
             ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section>
+        <Card className="shadow-lg border-2 border-primary/20">
+          <CardContent className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
+            <div className="flex-shrink-0">
+              <currentEcoLevel.Icon className={`w-10 h-10 sm:w-12 sm:h-12 ${currentEcoLevel.color}`} />
+            </div>
+            <div className="flex-grow space-y-1">
+              <p className={`text-sm font-semibold ${currentEcoLevel.color}`}>{currentEcoLevel.name}</p>
+              <p className="text-3xl font-bold text-foreground">{ecoScore}</p>
+              <div className="w-full">
+                <Progress value={progressToNextLevel} className="h-2 sm:h-2.5 [&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-primary" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pointsToNextLevelText()}
+                </p>
+              </div>
+               <Button variant="link" asChild className="p-0 h-auto text-xs text-primary hover:underline mt-1">
+                  <Link href="/leaderboard">View Leaderboard</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -268,7 +276,6 @@ export default function DashboardPage() {
                   <CardFooter className="p-3 border-t">
                      <Button variant="outline" size="sm" className="w-full" asChild>
                         <Link href={`/waste-shop#listing-${item.id}`}>View Details</Link> 
-                        {/* Simple link for now, could be more specific if needed */}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -288,3 +295,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
