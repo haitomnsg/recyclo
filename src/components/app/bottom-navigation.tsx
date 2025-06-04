@@ -3,13 +3,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ScanLine, ShoppingBag, Brush } from 'lucide-react';
+import { LayoutDashboard, ScanLine, ShoppingBag, Brush, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
   { href: '/classify', label: 'Classify', Icon: ScanLine },
+  { href: '/map', label: 'Map', Icon: MapPin },
   { href: '/waste-to-art', label: 'Art Ideas', Icon: Brush },
   { href: '/waste-shop', label: 'WasteShop', Icon: ShoppingBag },
 ];
@@ -31,7 +32,7 @@ export function BottomNavigation() {
             <Link href={item.href} key={item.label} legacyBehavior>
               <a
                 className={cn(
-                  'flex flex-col items-center justify-center text-center p-1 rounded-md transition-colors w-1/4 h-full', // Adjusted for 4 items
+                  'flex flex-col items-center justify-center text-center p-1 rounded-md transition-colors h-full flex-1', 
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 )}
               >

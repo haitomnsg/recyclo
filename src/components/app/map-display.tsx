@@ -1,6 +1,7 @@
+
 'use client';
 
-import React from 'react'; // Import React for React.memo and useMemo
+import React from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,9 +14,9 @@ if (typeof window !== 'undefined') {
   if (!(L.Icon.Default.prototype as any)._iconUrlOverridden) {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
-      iconRetinaUrl: '/leaflet/marker-icon-2x.png',
-      iconUrl: '/leaflet/marker-icon.png',
-      shadowUrl: '/leaflet/marker-shadow.png',
+      iconRetinaUrl: '/leaflet/marker-icon-2x.png', // Path relative to public directory
+      iconUrl: '/leaflet/marker-icon.png',         // Path relative to public directory
+      shadowUrl: '/leaflet/marker-shadow.png',     // Path relative to public directory
     });
     // Mark as configured
     (L.Icon.Default.prototype as any)._iconUrlOverridden = true;
@@ -30,8 +31,8 @@ interface MapDisplayProps {
 
 const MapDisplayComponent: React.FC<MapDisplayProps> = ({ center, zoom }) => {
   const mapStyle = React.useMemo(() => ({
-    height: '450px',
-    width: '100%'
+    height: '100%', // Fill parent
+    width: '100%'   // Fill parent
   }), []);
 
   return (
@@ -39,8 +40,8 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({ center, zoom }) => {
       center={center}
       zoom={zoom}
       scrollWheelZoom={true}
-      style={mapStyle} // Use memoized style
-      className="rounded-md" // Removed z-0
+      style={mapStyle}
+      className="rounded-md"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
@@ -62,6 +63,6 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({ center, zoom }) => {
 // This prevents re-rendering if props (center, zoom) haven't changed,
 // which can help avoid the "Map container is already initialized" error.
 const MemoizedMapDisplay = React.memo(MapDisplayComponent);
-MemoizedMapDisplay.displayName = 'MapDisplay'; // Optional: for better debugging names in React DevTools
+MemoizedMapDisplay.displayName = 'MapDisplay';
 
 export default MemoizedMapDisplay;
