@@ -88,7 +88,7 @@ export default function MapPage() {
     setIsCleanedDialogSpot(spot);
     setCleanedFormState({
       ...initialCleanedFormState,
-      dateCleaned: new Date().toISOString().split('T')[0] // ensure date is current
+      dateCleaned: new Date().toISOString().split('T')[0] 
     });
     setCleanedPhotoPreview(null);
     if (cleanedFileRef.current) cleanedFileRef.current.value = "";
@@ -138,13 +138,13 @@ export default function MapPage() {
 
     const updatedSpots = dirtySpots.map(spot =>
       spot.id === isCleanedDialogSpot.id
-        ? { ...spot, status: 'cleaned' as const, cleanedDetails: updatedDetails }
+        ? { ...spot, status: 'Cleaned' as const, cleanedDetails: updatedDetails }
         : spot
     );
     setDirtySpots(updatedSpots);
     localStorage.setItem(DIRTY_SPOTS_STORAGE_KEY, JSON.stringify(updatedSpots));
-    toast({ title: "Spot Cleaned!", description: `${isCleanedDialogSpot.title} has been marked as cleaned.` });
-    setIsCleanedDialogSpot(null); // Close dialog
+    toast({ title: "Spot Cleaned!", description: `${isCleanedDialogSpot.title} has been marked as Cleaned.` });
+    setIsCleanedDialogSpot(null); 
   };
 
   const getAiHint = (title: string): string => {
@@ -228,7 +228,7 @@ export default function MapPage() {
             {dirtySpots.map((spot) => (
               <Card
                 key={spot.id}
-                className={cn("hover:shadow-md transition-shadow bg-card flex flex-col", spot.status === 'cleaned' ? 'border-green-500' : 'border-destructive/50')}
+                className={cn("hover:shadow-md transition-shadow bg-card flex flex-col", spot.status === 'Cleaned' ? 'border-green-500' : 'border-destructive/50')}
               >
                 {spot.photoDataUrl && (
                   <div className="relative w-full h-40 cursor-pointer" onClick={() => handleListItemClick(spot)}>
@@ -245,11 +245,11 @@ export default function MapPage() {
                 <CardHeader className="p-3 flex-grow">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-base flex items-center text-card-foreground cursor-pointer" onClick={() => handleListItemClick(spot)}>
-                      <MapPinIcon className={cn("w-4 h-4 mr-2 flex-shrink-0", spot.status === 'cleaned' ? 'text-green-600' : 'text-destructive')} />
+                      <MapPinIcon className={cn("w-4 h-4 mr-2 flex-shrink-0", spot.status === 'Cleaned' ? 'text-green-600' : 'text-destructive')} />
                       {spot.title}
                     </CardTitle>
-                    <Badge variant={spot.status === 'cleaned' ? 'default' : 'destructive'} className={cn(spot.status === 'cleaned' ? 'bg-green-600 hover:bg-green-700' : '')}>
-                      {spot.status === 'cleaned' ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertTriangle className="w-3 h-3 mr-1" />}
+                    <Badge variant={spot.status === 'Cleaned' ? 'default' : 'destructive'} className={cn(spot.status === 'Cleaned' ? 'bg-green-600 hover:bg-green-700' : '')}>
+                      {spot.status === 'Cleaned' ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertTriangle className="w-3 h-3 mr-1" />}
                       {spot.status}
                     </Badge>
                   </div>
@@ -258,7 +258,7 @@ export default function MapPage() {
                    <p className="text-xs text-muted-foreground mt-1">
                     Reported by: {spot.reportedBy || 'Anonymous'} on {new Date(spot.reportedDate).toLocaleDateString()}
                   </p>
-                  {spot.status === 'cleaned' && spot.cleanedDetails && (
+                  {spot.status === 'Cleaned' && spot.cleanedDetails && (
                     <div className="mt-2 p-2 bg-green-500/10 rounded-md border border-green-500/30 text-xs text-green-700">
                       <p className="font-semibold">Cleaned by: {spot.cleanedDetails.cleanedBy}</p>
                       <p>Date: {new Date(spot.cleanedDetails.dateCleaned).toLocaleDateString()}</p>
@@ -272,7 +272,7 @@ export default function MapPage() {
                     </div>
                   )}
                 </CardHeader>
-                {spot.status === 'dirty' && (
+                {spot.status === 'Dirty' && (
                   <CardFooter className="p-3 border-t">
                     <Button variant="secondary" size="sm" className="w-full bg-primary/10 hover:bg-primary/20 text-primary" onClick={() => openCleanedDialog(spot)}>
                       <WandSparkles className="mr-2 h-4 w-4" /> Report as Cleaned

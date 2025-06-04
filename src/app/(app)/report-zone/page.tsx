@@ -9,23 +9,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { DirtySpot } from '@/lib/types'; // Changed from DirtyZoneReport to DirtySpot for consistency
+import type { DirtySpot, DirtyZoneReportFormData } from '@/lib/types';
 import { MapPin, Camera, ImagePlus, AlertTriangle, Save, FileText, Heading1, User } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 
-const DIRTY_SPOTS_STORAGE_KEY = 'ecoCycleDirtySpots'; // Updated key for consistency
+const DIRTY_SPOTS_STORAGE_KEY = 'ecoCycleDirtySpots';
 
-interface ReportZoneFormState {
-  title: string;
-  description: string;
-  latitude: string;
-  longitude: string;
-  photoDataUrl?: string;
-  reportedBy: string;
-}
-
-const initialFormState: ReportZoneFormState = {
+const initialFormState: DirtyZoneReportFormData = {
   title: '',
   description: '',
   latitude: '',
@@ -35,7 +26,7 @@ const initialFormState: ReportZoneFormState = {
 };
 
 export default function ReportZonePage() {
-  const [formData, setFormData] = useState<ReportZoneFormState>(initialFormState);
+  const [formData, setFormData] = useState<DirtyZoneReportFormData>(initialFormState);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -80,11 +71,11 @@ export default function ReportZonePage() {
       photoDataUrl: formData.photoDataUrl,
       reportedDate: new Date().toISOString(),
       reportedBy: formData.reportedBy || "Anonymous",
-      status: 'dirty', 
+      status: 'Dirty', 
     };
 
-    const storedSpots = localStorage.getItem(DIRTY_SPOTS_STORAGE_KEY);
-    const spots: DirtySpot[] = storedSpots ? JSON.parse(storedSpots) : [];
+    const storedSpotsString = localStorage.getItem(DIRTY_SPOTS_STORAGE_KEY);
+    const spots: DirtySpot[] = storedSpotsString ? JSON.parse(storedSpotsString) : [];
     spots.unshift(newSpotReport); 
     localStorage.setItem(DIRTY_SPOTS_STORAGE_KEY, JSON.stringify(spots));
 

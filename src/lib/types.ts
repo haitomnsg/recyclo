@@ -62,20 +62,18 @@ export interface DirtySpot {
   address?: string;
   photoDataUrl?: string; // Photo of the dirty spot
   description?: string;
-  status: 'dirty' | 'cleaned';
+  status: 'Dirty' | 'Cleaned'; // Capitalized and simplified status
   reportedBy?: string;
   reportedDate: string; // ISO string
   cleanedDetails?: CleanedDetails;
 }
 
-export interface DirtyZoneReport { // Used for the report form
-  id: string;
+// This type is for the form data on the report-zone page
+export interface DirtyZoneReportFormData {
   title: string;
   description: string;
-  latitude: number;
-  longitude: number;
-  photoDataUrl?: string; // Photo of the dirty spot
-  reportedDate: string; // ISO string
-  reportedBy?: string;
-  status: 'dirty' | 'cleaned'; // Initial status
+  latitude: string; // Keep as string for form input, parse to number on save
+  longitude: string; // Keep as string for form input, parse to number on save
+  photoDataUrl?: string;
+  reportedBy: string;
 }

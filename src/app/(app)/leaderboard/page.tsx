@@ -20,7 +20,7 @@ const getTrophyIcon = (rank: number) => {
   if (rank === 1) return <Trophy className="w-5 h-5 text-yellow-500" />;
   if (rank === 2) return <Medal className="w-5 h-5 text-slate-500" />;
   if (rank === 3) return <Award className="w-5 h-5 text-orange-500" />;
-  return <Star className="w-4 h-4 text-muted-foreground" />; // For ranks outside top 3
+  return <Star className="w-4 h-4 text-muted-foreground" />; 
 };
 
 const getRankCellStyle = (rank: number) => {
@@ -53,7 +53,7 @@ export default function LeaderboardPage() {
     // Calculate Waste Cleaners scores
     const cleanerScores: Record<string, number> = {};
     spots.forEach(spot => {
-      if (spot.status === 'cleaned' && spot.cleanedDetails) {
+      if (spot.status === 'Cleaned' && spot.cleanedDetails) {
         const cleaner = spot.cleanedDetails.cleanedBy || 'Anonymous Volunteer';
         cleanerScores[cleaner] = (cleanerScores[cleaner] || 0) + 100; // 100 points per spot cleaned
       }
