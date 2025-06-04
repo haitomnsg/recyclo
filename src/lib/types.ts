@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface OnboardingCardContent {
@@ -26,14 +27,4 @@ export interface WasteListing {
   estimatedWeight?: number; // in kg
   contactMethod: string; // e.g., location, phone, email
   dateListed: string; // ISO string
-}
-
-export interface DirtyZoneReport {
-  id: string;
-  description: string;
-  location: string; // Textual description of location
-  photoDataUrl?: string; // Base64 string for an optional photo
-  reportedDate: string; // ISO string for the date reported
-  // severity?: 'low' | 'medium' | 'high'; // Potential future field
-  // status?: 'reported' | 'in-progress' | 'cleaned'; // Potential future field
 }
