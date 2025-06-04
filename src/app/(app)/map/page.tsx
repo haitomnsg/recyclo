@@ -6,7 +6,8 @@ import dynamic from 'next/dynamic';
 import { Loader2, PlusCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { sampleDirtySpots, type DirtySpot } from '@/data/dirty-spots'; // Ensure correct import
+import { sampleDirtySpots } from '@/data/dirty-spots';
+import type { DirtySpot } from '@/lib/types';
 
 // Dynamically import MapDisplay as it uses client-side Google Maps API
 const MapDisplay = dynamic(() => import('@/components/app/map-display'), {
@@ -37,7 +38,7 @@ export default function MapPage() {
   const handleListItemClick = (spot: DirtySpot) => {
     setSelectedSpot(spot);
     // In a more advanced setup, you might want to pan the map to the spot here
-    // mapRef.current?.panTo(spot.position);
+    // For Google Maps, opening an InfoWindow usually pans if marker is off-screen.
   };
 
   if (!apiKey) {
