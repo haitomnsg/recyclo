@@ -8,6 +8,7 @@ body {
 
 @layer base {
   :root {
+    /* Light theme (fallback, but dark mode is forced) */
     --background: 120 20% 97%; /* Very light, slightly green-tinted white */
     --foreground: 120 25% 15%; /* Very dark green */
     --card: 0 0% 100%; /* White */
