@@ -26,13 +26,8 @@ import {
   ListPlus,
   Leaf,
   Recycle as RecycleIcon,
-  Shirt,
-  Laptop,
-  BookOpen,
-  Sofa,
-  ToyBrick,
 } from 'lucide-react';
-import type { WasteItem, WasteListing, DirtySpot, WasteCategory } from '@/lib/types';
+import type { WasteItem, WasteListing, DirtySpot, WasteCategory, ThriftItemCategory } from '@/lib/types'; // Added ThriftItemCategory
 import { cn } from '@/lib/utils';
 
 const WASTE_LOG_KEY = 'ecoCycleWasteLog';
@@ -98,7 +93,7 @@ export default function DashboardPage() {
     setRecentListings(listedWaste.slice(0, 3));
 
     const organicFertilizerCount = loggedWaste.filter(item => item.category === 'Organic Fertilizer').length;
-    const inorganicCount = loggedWaste.filter(item => item.category !== 'Organic Fertilizer').length;
+    const otherWasteCount = loggedWaste.filter(item => item.category !== 'Organic Fertilizer').length; // Updated logic
 
     const reportedCount = dirtySpots.filter(spot => spot.status === 'Dirty' || spot.status === 'Cleaned').length; 
     const cleanedCount = dirtySpots.filter(spot => spot.status === 'Cleaned').length;
@@ -106,14 +101,13 @@ export default function DashboardPage() {
 
     setKeyMetrics([
       { label: 'Organic Fertilizer Logged', value: organicFertilizerCount, Icon: Sprout, colorClass: '[&>div]:bg-green-500', progressMax: 50 },
-      { label: 'Other Waste Logged', value: inorganicCount, Icon: Archive, colorClass: '[&>div]:bg-blue-500', progressMax: 50 },
+      { label: 'Other Waste Logged', value: otherWasteCount, Icon: Archive, colorClass: '[&>div]:bg-blue-500', progressMax: 50 },
       { label: 'Dirty Spots Reported', value: reportedCount, Icon: AlertTriangle, colorClass: '[&>div]:bg-orange-500', progressMax: 10 },
       { label: 'Dirty Spots Cleaned', value: cleanedCount, Icon: CheckCircle, colorClass: '[&>div]:bg-teal-500', progressMax: 5 },
       { label: 'WasteShop Items Listed', value: wasteShopItemsCount, Icon: ShoppingBag, colorClass: '[&>div]:bg-pink-500', progressMax: 20 },
     ]);
     
-    // Points: Logged items: 1pt each (organic or inorganic), Reported spots: 10pts, Cleaned spots: 100pts, WasteShop items: 5pts
-    const currentScore = (organicFertilizerCount * 1) + (inorganicCount * 1) + (reportedCount * 10) + (cleanedCount * 100) + (wasteShopItemsCount * 5);
+    const currentScore = (organicFertilizerCount * 1) + (otherWasteCount * 1) + (reportedCount * 10) + (cleanedCount * 100) + (wasteShopItemsCount * 5);
     setEcoScore(currentScore);
     
     const level = getEcoLevel(currentScore);
@@ -122,7 +116,7 @@ export default function DashboardPage() {
     const nextLevelDetails = ecoLevels.find(l => l.minScore > currentScore);
     let progress = 0;
     if (level.minScore === ecoLevels[ecoLevels.length - 1].minScore) { 
-        progress = 100; // Max level reached
+        progress = 100; 
     } else if (nextLevelDetails) {
         const scoreInCurrentLevelSpan = currentScore - level.minScore;
         const scoreNeededForNextLevelSpan = nextLevelDetails.minScore - level.minScore;

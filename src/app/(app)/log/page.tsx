@@ -9,8 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { WasteItem, RecyclingCategoryType, WasteCategory } from '@/lib/types';
 import { 
-  ListPlus, Trash2, Edit3, Leaf, Archive, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone,
-  Shirt, Laptop, BookOpen, Sofa, ToyBrick, Brush, Sprout, Package as PackageIcon // Aliased Package to avoid conflict
+  ListPlus, Trash2, Edit3, CalendarDays, Weight, StickyNote, Save, XCircle, Briefcase, Users, Info, Phone,
+  Shirt, Laptop, BookOpen, Sofa, ToyBrick, Brush, Sprout, Package as PackageIcon, Archive // Added Archive
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -35,7 +35,7 @@ const detailedWasteCategories: { name: WasteCategory; Icon: React.ElementType }[
 
 const initialFormState: Omit<WasteItem, 'id' | 'sourceType'> & { date: string } = {
   name: '',
-  category: 'Other', // Default to 'Other'
+  category: 'Other', 
   date: new Date().toISOString().split('T')[0], 
   weight: undefined,
   notes: '',
@@ -60,11 +60,11 @@ export default function LogPage() {
 
     const prefillDataString = localStorage.getItem(PREFILL_KEY);
     if (prefillDataString) {
-      const prefillData = JSON.parse(prefillDataString);
+      const prefillData = JSON.parse(prefillDataString) as Partial<WasteItem>;
       setFormData(prev => ({
         ...prev,
         name: prefillData.name || '',
-        category: prefillData.category || 'Other', // Use new default
+        category: prefillData.category || 'Other',
       }));
       localStorage.removeItem(PREFILL_KEY); 
     }
@@ -127,7 +127,7 @@ export default function LogPage() {
         category: item.category,
         date: item.date.split('T')[0], 
         weight: item.weight,
-        notes: item.notes,
+        notes: item.notes || '',
         businessName: item.businessName || '',
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });

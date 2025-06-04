@@ -10,6 +10,7 @@ export interface OnboardingCardContent {
   Icon?: LucideIcon; // Optional icon for the card title
 }
 
+// Updated WasteCategory for the Log page
 export type WasteCategory = 
   | 'Clothes' 
   | 'Electronics' 
@@ -23,7 +24,7 @@ export type WasteCategory =
 export interface WasteItem {
   id: string;
   name: string;
-  category: WasteCategory; // Updated category type
+  category: WasteCategory; // Uses the new detailed WasteCategory
   date: string; // ISO string
   weight?: number; // in kg
   notes?: string;
@@ -31,6 +32,7 @@ export interface WasteItem {
   businessName?: string;
 }
 
+// This category type is for the Waste Listings (user-submitted items for exchange/donation)
 export type WasteListingCategory = 'Organic' | 'Inorganic' | 'Recyclable' | 'Hazardous' | 'Other';
 
 export interface WasteListing {

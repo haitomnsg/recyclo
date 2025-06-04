@@ -40,32 +40,29 @@ const wasteCategoryIcons: Record<WasteListingCategory, React.ElementType> = {
   Other: Package,
 };
 
-const thriftCategoryIcons: Record<ThriftItemCategory | 'All', React.ElementType> = {
+const thriftCategoryIcons: Record<ThriftItemCategory | typeof allThriftCategoryValue, React.ElementType> = {
   Clothes: Shirt,
   Electronics: Laptop,
   Books: BookOpen,
   Toys: ToyBrick,
   Furniture: Sofa,
   Other: Package,
-  All: Diamond, // Icon for "All Categories"
+  All: Diamond, 
 };
 
 export default function WasteShopPage() {
-  // State for Waste Listings Tab
   const [listings, setListings] = useState<WasteListing[]>([]);
   const [formData, setFormData] = useState(initialFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // State for Thrift Shop Tab
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedThriftCategory, setSelectedThriftCategory] = useState<ThriftItemCategory | typeof allThriftCategoryValue>(allThriftCategoryValue);
   const [filteredThriftItems, setFilteredThriftItems] = useState<ThriftItem[]>(sampleThriftItems);
 
   const { toast } = useToast();
 
-  // Effect for Waste Listings
   useEffect(() => {
     const storedListings = localStorage.getItem(WASTE_LISTINGS_KEY);
     if (storedListings) {
@@ -88,7 +85,6 @@ export default function WasteShopPage() {
     }
   }, []);
 
-  // Effect for Thrift Shop filtering
   useEffect(() => {
     let items = sampleThriftItems;
     if (selectedThriftCategory !== allThriftCategoryValue) {
@@ -389,7 +385,7 @@ export default function WasteShopPage() {
                     const IconComp = thriftCategoryIcons[item.category] || Package;
                     return (
                     <Card key={item.id} className="shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
-                      <div className="relative w-full h-40 bg-muted"> {/* Reduced height */}
+                      <div className="relative w-full h-40 bg-muted">
                         <Image 
                           src={item.imageUrl} 
                           alt={item.name} 
