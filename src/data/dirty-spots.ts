@@ -9,6 +9,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Near Rani Pokhari, Kantipath',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Accumulation of plastic bags and food waste.',
+    status: 'dirty',
+    reportedBy: 'EcoSystem',
+    reportedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
   },
   {
     id: 'spot2',
@@ -17,6 +20,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'South of Teku Bridge, near the river.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Construction debris and household waste dumped.',
+    status: 'dirty',
+    reportedBy: 'Local Resident A',
+    reportedDate: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot3',
@@ -25,6 +31,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Near Dallu Awas, along the corridor.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Mixed waste including old clothes and plastics.',
+    status: 'dirty',
+    reportedBy: 'Volunteer Group X',
+    reportedDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot4',
@@ -33,6 +42,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Eastern side, pathway leading to stupa.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Tourist litter and discarded items.',
+    status: 'dirty',
+    reportedBy: 'EcoSystem',
+    reportedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot5',
@@ -41,6 +53,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Behind Krishna Mandir, narrow connecting lane.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Overflowing bins and scattered refuse.',
+    status: 'dirty',
+    reportedBy: 'Local Resident B',
+    reportedDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot6',
@@ -49,6 +64,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Near Gopi Krishna Hall turning, roadside.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Commercial waste and vegetable scraps.',
+    status: 'dirty',
+    reportedBy: 'Municipality Worker',
+    reportedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot7',
@@ -57,6 +75,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Service lane near the underpass entry.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Uncollected garbage bags and debris.',
+    status: 'dirty',
+    reportedBy: 'EcoSystem',
+    reportedDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot8',
@@ -65,6 +86,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Z-Street, near a popular bakery.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Waste from shops and restaurants.',
+    status: 'dirty',
+    reportedBy: 'Tourist Guide',
+    reportedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot9',
@@ -73,6 +97,9 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Outer kora path, less frequented sections.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Plastic bottles and packaging materials.',
+    status: 'dirty',
+    reportedBy: 'Monastery Staff',
+    reportedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'spot10',
@@ -81,27 +108,8 @@ export const sampleDirtySpots: DirtySpot[] = [
     address: 'Offshoot lane from main New Road shopping area.',
     photoDataUrl: 'https://placehold.co/300x200.png',
     description: 'Discarded packaging and market waste.',
+    status: 'dirty',
+    reportedBy: 'Shop Owner',
+    reportedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
-
-// Add data-ai-hint to all placeholder images
-sampleDirtySpots.forEach(spot => {
-  if (spot.photoDataUrl && spot.photoDataUrl.startsWith('https://placehold.co')) {
-    const hintsMap: {[key: string]: string} = {
-      'Kantipath Roadside Dump': 'roadside garbage',
-      'Bagmati River Bank - Teku Overflow': 'river pollution',
-      'Bishnumati Corridor - Dallu Debris': 'urban waste',
-      'Swayambhunath Foothill Litter': 'temple litter',
-      'Patan Durbar Square Alleyway Mess': 'alleyway trash',
-      'Chabahil Chowk Corner Pileup': 'market waste',
-      'Kalanki Underpass Area Dumping': 'underpass garbage',
-      'Thamel Street Waste Buildup': 'street waste',
-      'Boudhanath Kora Path Litter': 'stupa litter',
-      'New Road Back Alley Dump': 'alley trash',
-    }
-    const hint = hintsMap[spot.title] || 'waste dump';
-    // This part is tricky because I cannot add attributes directly to the string URL.
-    // The data-ai-hint should be added where the Image component is used.
-    // For now, I'm just making sure the placeholder URL is correct.
-  }
-});

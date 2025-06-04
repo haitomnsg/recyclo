@@ -9,19 +9,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { DirtyZoneReport } from '@/lib/types';
-import { MapPin, Camera, ImagePlus, AlertTriangle, Save, FileText, LocateFixed, Heading1, Map } from 'lucide-react';
+import type { DirtySpot } from '@/lib/types'; // Changed from DirtyZoneReport to DirtySpot for consistency
+import { MapPin, Camera, ImagePlus, AlertTriangle, Save, FileText, Heading1, User } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 
-const DIRTY_ZONES_KEY = 'ecoCycleDirtyZones';
+const DIRTY_SPOTS_STORAGE_KEY = 'ecoCycleDirtySpots'; // Updated key for consistency
 
 interface ReportZoneFormState {
   title: string;
   description: string;
-  latitude: string; // Store as string for input, convert to number on submit
-  longitude: string; // Store as string for input, convert to number on submit
+  latitude: string;
+  longitude: string;
   photoDataUrl?: string;
+  reportedBy: string;
 }
 
 const initialFormState: ReportZoneFormState = {
@@ -30,6 +31,7 @@ const initialFormState: ReportZoneFormState = {
   latitude: '',
   longitude: '',
   photoDataUrl: undefined,
+  reportedBy: '',
 };
 
 export default function ReportZonePage() {
@@ -66,24 +68,25 @@ export default function ReportZonePage() {
     const lng = parseFloat(formData.longitude);
 
     if (!formData.title || !formData.description || isNaN(lat) || isNaN(lng)) {
-      toast({ variant: "destructive", title: "Missing Information", description: "Please provide a title, description, and valid latitude/longitude." });
+      toast({ variant: "destructive", title: "Missing Information", description: "Please provide title, description, and valid coordinates." });
       return;
     }
 
-    const newReport: DirtyZoneReport = { 
+    const newSpotReport: DirtySpot = { 
       id: Date.now().toString(), 
       title: formData.title,
       description: formData.description,
-      latitude: lat,
-      longitude: lng,
+      position: { lat, lng },
       photoDataUrl: formData.photoDataUrl,
-      reportedDate: new Date().toISOString() 
+      reportedDate: new Date().toISOString(),
+      reportedBy: formData.reportedBy || "Anonymous",
+      status: 'dirty', 
     };
 
-    const storedReports = localStorage.getItem(DIRTY_ZONES_KEY);
-    const reports: DirtyZoneReport[] = storedReports ? JSON.parse(storedReports) : [];
-    reports.unshift(newReport); 
-    localStorage.setItem(DIRTY_ZONES_KEY, JSON.stringify(reports));
+    const storedSpots = localStorage.getItem(DIRTY_SPOTS_STORAGE_KEY);
+    const spots: DirtySpot[] = storedSpots ? JSON.parse(storedSpots) : [];
+    spots.unshift(newSpotReport); 
+    localStorage.setItem(DIRTY_SPOTS_STORAGE_KEY, JSON.stringify(spots));
 
     toast({ title: "Zone Reported", description: "Thank you for helping keep Kathmandu clean!" });
     setFormData(initialFormState);
@@ -114,6 +117,16 @@ export default function ReportZonePage() {
                 onChange={handleInputChange} 
                 placeholder="e.g., Kantipath Roadside Dump" 
                 required 
+              />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="reportedBy" className="flex items-center gap-1"><User className="w-4 h-4 text-muted-foreground" />Your Name (Optional)</Label>
+              <Input 
+                id="reportedBy" 
+                name="reportedBy" 
+                value={formData.reportedBy} 
+                onChange={handleInputChange} 
+                placeholder="e.g., John Doe" 
               />
             </div>
             <div className="space-y-2">
@@ -157,7 +170,7 @@ export default function ReportZonePage() {
               </div>
             </div>
              <div className="space-y-2">
-              <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo (optional)</Label>
+              <Label className="flex items-center gap-1"><ImagePlus className="w-4 h-4 text-muted-foreground" />Photo of Dirty Spot (optional)</Label>
                <Label
                 htmlFor="photo-upload"
                 className={cn(

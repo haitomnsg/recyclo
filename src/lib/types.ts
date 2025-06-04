@@ -17,8 +17,8 @@ export interface WasteItem {
   date: string; // ISO string
   weight?: number; // in kg
   notes?: string;
-  sourceType: 'public' | 'business'; // New field
-  businessName?: string; // Optional for business logs
+  sourceType: 'public' | 'business';
+  businessName?: string;
 }
 
 export interface WasteListing {
@@ -31,13 +31,12 @@ export interface WasteListing {
   dateListed: string; // ISO string
 }
 
-// For Recycling Partners Directory
 export interface RecyclingPartner {
   id: string;
   name: string;
-  contact: string; // Could be phone, email, or address
+  contact: string;
   description: string;
-  materials: RecyclingCategoryType[]; // Which materials they handle
+  materials: RecyclingCategoryType[];
 }
 
 export type RecyclingCategoryType = 'Paper' | 'Plastic' | 'Compost' | 'Bottles';
@@ -48,22 +47,35 @@ export interface RecyclingCategory {
   Icon: LucideIcon;
 }
 
+export interface CleanedDetails {
+  photoDataUrl?: string;
+  dateCleaned: string; // ISO string
+  volunteersInvolved: number;
+  cleanedBy: string; // Name of person/group who cleaned
+  notes?: string;
+}
+
 export interface DirtySpot {
   id: string;
-  title: string; // Changed from name
+  title: string;
   position: google.maps.LatLngLiteral;
   address?: string;
-  photoDataUrl?: string; // Added for image
-  description?: string; // Added for more details
-}
-
-export interface DirtyZoneReport {
-  id: string;
-  title: string; // Added
-  description: string;
-  latitude: number; // Added
-  longitude: number; // Added
-  photoDataUrl?: string; // Base64 string for the image
+  photoDataUrl?: string; // Photo of the dirty spot
+  description?: string;
+  status: 'dirty' | 'cleaned';
+  reportedBy?: string;
   reportedDate: string; // ISO string
+  cleanedDetails?: CleanedDetails;
 }
 
+export interface DirtyZoneReport { // Used for the report form
+  id: string;
+  title: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  photoDataUrl?: string; // Photo of the dirty spot
+  reportedDate: string; // ISO string
+  reportedBy?: string;
+  status: 'dirty' | 'cleaned'; // Initial status
+}
