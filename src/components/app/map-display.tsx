@@ -1,13 +1,13 @@
 
 'use client';
 
-import React from 'react'; // Import React for React.memo and useMemo
+import React from 'react'; 
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { Loader2 } from 'lucide-react';
-import type { DirtySpot } from '@/data/dirty-spots'; // Ensure this type is correctly defined and imported
+import type { DirtySpot } from '@/lib/types';
 
 interface MapDisplayProps {
-  apiKey: string; // Kept for consistency, though useJsApiLoader uses it directly
+  apiKey: string; 
   center: google.maps.LatLngLiteral;
   zoom: number;
   dirtySpots?: DirtySpot[];
@@ -19,7 +19,7 @@ interface MapDisplayProps {
 const containerStyleDefault: React.CSSProperties = {
   width: '100%',
   height: '100%',
-  minHeight: '300px', // Ensure map is visible even if parent height is small
+  minHeight: '300px', 
 };
 
 const MapDisplayComponent: React.FC<MapDisplayProps> = ({
@@ -32,9 +32,8 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({
   onInfoWindowClose,
 }) => {
   const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script', // Unique ID for the script tag
+    id: 'google-map-script', 
     googleMapsApiKey: apiKey,
-    // libraries: ['places'], // Uncomment if you need Places API features
   });
 
   const mapRef = React.useRef<google.maps.Map | null>(null);
@@ -47,7 +46,6 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({
     mapRef.current = null;
   }, []);
 
-  // Memoize containerStyle to prevent unnecessary re-renders of GoogleMap due to style prop changing identity
   const containerStyle = React.useMemo(() => containerStyleDefault, []);
 
   if (loadError) {
@@ -80,21 +78,17 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({
           <MarkerF
             position={spot.position}
             onClick={() => onMarkerClick?.(spot)}
-            // Example of how you might use a custom icon (ensure the path is correct in /public)
-            // icon={{
-            //   url: `/icons/custom-map-pin.svg`, 
-            //   scaledSize: new window.google.maps.Size(30, 30),
-            // }}
           />
           {selectedSpot && selectedSpot.id === spot.id && onInfoWindowClose && (
             <InfoWindowF
               position={spot.position}
               onCloseClick={onInfoWindowClose}
-              options={{ pixelOffset: new window.google.maps.Size(0, -30) }} // Adjusts InfoWindow position relative to marker
+              options={{ pixelOffset: new window.google.maps.Size(0, -30) }} 
             >
               <div className="p-1">
-                <h4 className="font-semibold text-sm text-gray-800">{spot.name}</h4>
+                <h4 className="font-semibold text-sm text-gray-800">{spot.title}</h4>
                 {spot.address && <p className="text-xs text-gray-600">{spot.address}</p>}
+                {spot.description && <p className="text-xs text-gray-600 mt-0.5">{spot.description}</p>}
               </div>
             </InfoWindowF>
           )}
@@ -109,8 +103,7 @@ const MapDisplayComponent: React.FC<MapDisplayProps> = ({
   );
 };
 
-// Memoize the component to prevent unnecessary re-renders if props haven't changed
 const MemoizedMapDisplay = React.memo(MapDisplayComponent);
-MemoizedMapDisplay.displayName = 'MapDisplay'; // For better debugging
+MemoizedMapDisplay.displayName = 'MapDisplay'; 
 
 export default MemoizedMapDisplay;

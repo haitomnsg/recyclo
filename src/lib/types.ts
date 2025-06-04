@@ -50,15 +50,20 @@ export interface RecyclingCategory {
 
 export interface DirtySpot {
   id: string;
-  name: string;
+  title: string; // Changed from name
   position: google.maps.LatLngLiteral;
   address?: string;
+  photoDataUrl?: string; // Added for image
+  description?: string; // Added for more details
 }
 
 export interface DirtyZoneReport {
   id: string;
+  title: string; // Added
   description: string;
-  location: string; // Textual description of location
+  latitude: number; // Added
+  longitude: number; // Added
   photoDataUrl?: string; // Base64 string for the image
   reportedDate: string; // ISO string
 }
+
