@@ -32,17 +32,7 @@ Get creative ideas to **reuse or repurpose waste items** by simply uploading a p
 
 ## 🖼️ Screenshots
 
-### Dashboard  
-![Dashboard](screenshots/dashboard.png)
-
-### Waste Classification  
-![Classification](screenshots/classify.png)
-
-### Dirty Spot Map  
-![Map](screenshots/map.png)
-
-### WasteShop Thrift Listing  
-![WasteShop](screenshots/wasteshop.png)
+![Frame 7 (1)](https://github.com/user-attachments/assets/4930b585-5818-4e1f-b8b7-529ad8a3d95e)
 
 ---
 
